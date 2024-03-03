@@ -8,7 +8,7 @@
 cp .env.example .env.local
 ```
 
-- 以下の値はSupabaseのプロジェクトの`Project Settings > API`ページの内容で置き換える
+- 以下の値をSupabaseのプロジェクトの`Project Settings > API`ページの内容で置き換える
 ```
 NEXT_PUBLIC_SUPABASE_URL=your-project-url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
