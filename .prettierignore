@@ -27,3 +27,4 @@ tailwind.config.js
 tsconfig.json
 postcss.config.js
 ./vscode/
+.lintstagedrc.js
