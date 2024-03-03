@@ -1,0 +1,29 @@
+# Ignore artifacts:
+build
+coverage
+yarn.lock
+
+# dotfile
+.env*
+
+# markdown
+*.md
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# yarn
+/.yarn/
+
+# config
+.eslintrc.js
+prettier.config.js
+next.config.js
+tailwind.config.js
+tsconfig.json
+postcss.config.js
+./vscode/
