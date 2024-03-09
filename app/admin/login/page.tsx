@@ -18,12 +18,14 @@ export default function Login({ searchParams }: { searchParams: { message: strin
     })
 
     if (error) {
-      return redirect('/login?message=Could not authenticate user')
+      return redirect('/admin/login?message=Could not authenticate user')
     }
 
-    return redirect('/')
+    return redirect('/admin')
   }
 
+  // TODO: 清掃員作成機能の実装時に参考にする
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const signUp = async (formData: FormData) => {
     'use server'
 
@@ -41,10 +43,10 @@ export default function Login({ searchParams }: { searchParams: { message: strin
     })
 
     if (error) {
-      return redirect('/login?message=Could not authenticate user')
+      return redirect('/admin/login?message=Could not authenticate user')
     }
 
-    return redirect('/login?message=Check email to continue sign in process')
+    return redirect('/admin/login?message=Check email to continue sign in process')
   }
 
   return (
@@ -71,8 +73,9 @@ export default function Login({ searchParams }: { searchParams: { message: strin
       </Link>
 
       <form className='animate-in flex-1 flex flex-col w-full justify-center gap-2 text-foreground'>
+        管理者ログイン
         <label className='text-md' htmlFor='email'>
-          Email
+          メールアドレス
         </label>
         <input
           className='rounded-md px-4 py-2 bg-inherit border mb-6'
@@ -81,7 +84,7 @@ export default function Login({ searchParams }: { searchParams: { message: strin
           required
         />
         <label className='text-md' htmlFor='password'>
-          Password
+          パスワード
         </label>
         <input
           className='rounded-md px-4 py-2 bg-inherit border mb-6'
@@ -97,16 +100,7 @@ export default function Login({ searchParams }: { searchParams: { message: strin
           className='bg-green-700 rounded-md px-4 py-2 text-foreground mb-2'
           pendingText='Signing In...'
         >
-          Sign In
-        </SubmitButton>
-        <SubmitButton
-          // NOTE: Server Actions
-          // eslint-disable-next-line @typescript-eslint/no-misused-promises
-          formAction={signUp}
-          className='border border-foreground/20 rounded-md px-4 py-2 text-foreground mb-2'
-          pendingText='Signing Up...'
-        >
-          Sign Up
+          ログイン
         </SubmitButton>
         {searchParams?.message && (
           <p className='mt-4 p-4 bg-foreground/10 text-foreground text-center'>
