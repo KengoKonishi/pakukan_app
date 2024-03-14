@@ -22,9 +22,7 @@ const SideMenu = () => {
           <p className='px-4 pb-2 text-white text-xl'>MENU</p>
         </div>
         <div className={`menu-items py-2 ${isOpen ? 'open' : ''}`}>
-          <MenuItemCalender icon='▶️' link='/admin/'>
-            カレンダー
-          </MenuItemCalender>
+          <MenuItemCalender />
           <MenuItem link='/admin/cleaning_status_list/'>清掃状況管理</MenuItem>
           <MenuItem link='/admin/guesthouse_list/'>民泊施設情報</MenuItem>
           <MenuItem link='/admin/staff_list/'>清掃員情報</MenuItem>
@@ -36,15 +34,7 @@ const SideMenu = () => {
   )
 }
 
-const MenuItemCalender = ({
-  children,
-  icon = '▶️',
-  link,
-}: {
-  children: React.ReactNode
-  icon?: string
-  link: string
-}) => {
+const MenuItemCalender = () => {
   const [isExpanded, setIsExpanded] = useState(false)
 
   const handleExpand = () => {
@@ -61,25 +51,17 @@ const MenuItemCalender = ({
 
   return (
     <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-      <div className='menu-item bg-orange-200 pl-4 my-2 py-2 hover:bg-orange-100 hover:text-gray-600'>
-        <Link href={link} className=''>
+      <div className='text-start bg-orange-200 text-gray-950 pl-4 my-2 py-2 hover:bg-orange-100 hover:text-gray-600'>
+        <Link href='/admin' className=''>
           <div className='item-header' onClick={handleExpand}>
-            {isExpanded && children === 'カレンダー' ? '▼' : icon} {children}
+            {isExpanded ? '▼' : '▶️'} カレンダー
           </div>
         </Link>
       </div>
-      {isExpanded && children === 'カレンダー' && (
-        <div className='sub-menu text-sm ml-2'>
-          <Link href='admin/stay_schedule/create/' className='menu-item'>
-            <div className='bg-orange-200 pl-4 my-2 py-2 hover:bg-orange-100 hover:text-gray-600'>
-              ・宿泊スケジュール作成
-            </div>
-          </Link>
-          <Link href='admin/staff_schedule/create/' className='menu-item'>
-            <div className='bg-orange-200 pl-4 my-2 py-2 hover:bg-orange-100 hover:text-gray-600'>
-              ・清掃員スケジュール作成
-            </div>
-          </Link>
+      {isExpanded && (
+        <div className='text-sm ml-2'>
+          <MenuItem link='admin/stay_schedule/create'>宿泊スケジュール作成</MenuItem>
+          <MenuItem link='admin/staff_schedule/create'>清掃員スケジュール作成</MenuItem>
         </div>
       )}
     </div>
