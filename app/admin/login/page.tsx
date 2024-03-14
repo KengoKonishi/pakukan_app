@@ -12,6 +12,12 @@ export default function Login({ searchParams }: { searchParams: { message: strin
     const password = formData.get('password') as string
     const supabase = createClient()
 
+    // 管理者テーブルへの検索
+    const { data } = await supabase.from('admins').select().eq('email', email)
+    if (!data || data.length === 0) {
+      return redirect('/admin/login?message=Could not authenticate user')
+    }
+
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -38,11 +44,17 @@ export default function Login({ searchParams }: { searchParams: { message: strin
       email,
       password,
       options: {
+        data: {
+          owner_group_id: 1,
+          role: 'admin',
+          name: email + 'さん',
+        },
         emailRedirectTo: `${origin}/auth/callback`,
       },
     })
 
     if (error) {
+      console.log(error)
       return redirect('/admin/login?message=Could not authenticate user')
     }
 
@@ -101,6 +113,16 @@ export default function Login({ searchParams }: { searchParams: { message: strin
           pendingText='Signing In...'
         >
           ログイン
+        </SubmitButton>
+        {/* テストユーザー作成用に表示 */}
+        <SubmitButton
+          // NOTE: Server Actions
+          // eslint-disable-next-line @typescript-eslint/no-misused-promises
+          formAction={signUp}
+          className='bg-green-700 rounded-md px-4 py-2 text-foreground mb-2'
+          pendingText='Signing In...'
+        >
+          登録
         </SubmitButton>
         {searchParams?.message && (
           <p className='mt-4 p-4 bg-foreground/10 text-foreground text-center'>
