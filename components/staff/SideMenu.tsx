@@ -21,9 +21,9 @@ const SideMenu = () => {
           <p className='px-4 pb-2 text-white text-xl'>MENU</p>
         </div>
         <div className={`menu-items py-2 ${isOpen ? 'open' : ''}`}>
-          <MenuItem link='/staff'>・カレンダー</MenuItem>
-          <MenuItem link='/staff/settings'>・登録情報</MenuItem>
-          <MenuItem link=''>・ログアウト</MenuItem>
+          <MenuItem link='/staff'>カレンダー</MenuItem>
+          <MenuItem link='/staff/settings'>登録情報</MenuItem>
+          <MenuItem link=''>ログアウト</MenuItem>
         </div>
       </div>
     </div>

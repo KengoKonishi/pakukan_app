@@ -25,11 +25,11 @@ const SideMenu = () => {
           <MenuItemCalender icon='▶️' link='/admin/'>
             カレンダー
           </MenuItemCalender>
-          <MenuItem link='/admin/cleaning_status_list/'>・清掃状況管理</MenuItem>
-          <MenuItem link='/admin/guesthouse_list/'>・民泊施設情報</MenuItem>
-          <MenuItem link='/admin/staff_list/'>・清掃員情報</MenuItem>
-          <MenuItem link='/admin/settings/'>・管理者情報</MenuItem>
-          <MenuItem link=''>・ログアウト</MenuItem>
+          <MenuItem link='/admin/cleaning_status_list/'>清掃状況管理</MenuItem>
+          <MenuItem link='/admin/guesthouse_list/'>民泊施設情報</MenuItem>
+          <MenuItem link='/admin/staff_list/'>清掃員情報</MenuItem>
+          <MenuItem link='/admin/settings/'>管理者情報</MenuItem>
+          <MenuItem link=''>ログアウト</MenuItem>
         </div>
       </div>
     </div>
