@@ -3,18 +3,37 @@
 - Supabaseの`pakukan_app`プロジェクトに参加しておく
 
 ## 手順
+- supabaseのプロジェクトをローカルに紐付ける
+```
+supabase link --project-ref yhbeozxybcgzdmccyvzl
+```
+
+- db更新(検証のsupabaseの内容をローカルに取り込み)
+```
+supabase db pull
+```
+
 - .env.localの作成
 ```
 cp .env.example .env.local
 ```
 
-- 以下の値をSupabaseのプロジェクトの`Project Settings > API`ページの内容で置き換える
+- supabaseをローカルで起動
+```
+supabase start
+```
+
+- .env.localの以下の値を、向き先に応じて書き換える
+    - ローカル
+        - `supabase start`の実行結果に表示されている`API URL`と`anon key`を参照する
+    - 検証
+        - Supabaseのプロジェクトの`Project Settings > API`ページの内容で置き換える
 ```
 NEXT_PUBLIC_SUPABASE_URL=your-project-url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ```
 
-- ローカルで起動
+- Next起動
 ```
 npm run dev
 ```
