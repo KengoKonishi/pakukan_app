@@ -82,7 +82,7 @@ export const updateSession = async (request: NextRequest) => {
       // 管理者権限でない場合はトップページにリダイレクト
       const metadata = user.user_metadata
       if (!metadata || metadata.role !== 'admin') {
-        return NextResponse.redirect(`${origin}`)
+        return NextResponse.redirect(`${origin}/${metadata.role}`)
       }
     }
 
@@ -98,7 +98,7 @@ export const updateSession = async (request: NextRequest) => {
       // 清掃員権限でない場合はトップページにリダイレクト
       const metadata = user.user_metadata
       if (!metadata || metadata.role !== 'staff') {
-        return NextResponse.redirect(`${origin}`)
+        return NextResponse.redirect(`${origin}/${metadata.role}`)
       }
     }
 
