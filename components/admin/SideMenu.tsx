@@ -12,13 +12,10 @@ const SideMenu = () => {
   }
 
   return (
-    <div className='side-menu bg-gray-200 h-screen w-72 fixed left-0 top-0 px-4 text-sm'>
-      <div className='bg-orange-500 title px-4 py-4 my-4 text-xl'>パクカンシステム</div>
+    <div className='bg-gray-200 h-screen w-72 fixed left-0 top-0 px-4 text-sm'>
+      <div className='bg-orange-500 px-4 py-4 my-4 text-xl'>パクカンシステム</div>
       <div className='h-screen bg-yellow-800 px-4 py-4'>
-        <div
-          className='menu-toggle border-b-4 border-b-orange-500'
-          onClick={handleToggle}
-        >
+        <div className='border-b-4 border-b-orange-500' onClick={handleToggle}>
           <p className='px-4 pb-2 text-white text-xl'>MENU</p>
         </div>
         <div className={`menu-items py-2 ${isOpen ? 'open' : ''}`}>
@@ -53,9 +50,7 @@ const MenuItemCalender = () => {
     <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <div className='text-start bg-orange-200 text-gray-950 pl-4 my-2 py-2 hover:bg-orange-100 hover:text-gray-600'>
         <Link href='/admin' className=''>
-          <div className='item-header' onClick={handleExpand}>
-            {isExpanded ? '▼' : '▶️'} カレンダー
-          </div>
+          <div onClick={handleExpand}>{isExpanded ? '▼' : '▶️'} カレンダー</div>
         </Link>
       </div>
       {isExpanded && (
