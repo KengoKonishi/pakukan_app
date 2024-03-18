@@ -22,9 +22,7 @@ export default async function AuthButton({ loginUrl }: { loginUrl: string }) {
       Hey, {user.email}!
       {/* eslint-disable-next-line @typescript-eslint/no-misused-promises */}
       <form action={signOut}>
-        <button className='py-2 px-4 rounded-md no-underline bg-btn-background hover:bg-btn-background-hover'>
-          Logout
-        </button>
+        <button className='py-2 px-4 rounded-md no-underline'>Logout</button>
       </form>
     </div>
   ) : (
