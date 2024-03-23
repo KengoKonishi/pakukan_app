@@ -7,13 +7,15 @@ import allLocales from '@fullcalendar/core/locales-all'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import FullCalendar from '@fullcalendar/react'
+import { CustomEventInput } from '@/types/Calendar'
 
 type Props = {
+  events: CustomEventInput[]
   handleDateClick?: (selectInfo: DateSelectArg) => void
   selectable: boolean
 }
 
-const Calendar = ({ handleDateClick, selectable }: Props) => {
+const Calendar = ({ events, handleDateClick, selectable }: Props) => {
   return (
     <FullCalendar
       locale='ja'
@@ -22,6 +24,7 @@ const Calendar = ({ handleDateClick, selectable }: Props) => {
       initialView='dayGridMonth'
       selectable={selectable}
       select={handleDateClick}
+      events={events}
     />
   )
 }
