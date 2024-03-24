@@ -2,7 +2,7 @@
 
 // NOTE: プラグインを後から読み込ませるため
 // eslint-disable-next-line import/order
-import { DateSelectArg } from '@fullcalendar/core'
+import { DateSelectArg, EventClickArg } from '@fullcalendar/core'
 import allLocales from '@fullcalendar/core/locales-all'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
@@ -11,11 +11,12 @@ import { CustomEventInput } from '@/types/Calendar'
 
 type Props = {
   events: CustomEventInput[]
-  handleDateClick?: (selectInfo: DateSelectArg) => void
   selectable: boolean
+  handleEventClick?: (eventInfo: EventClickArg) => void
+  handleDateClick?: (selectInfo: DateSelectArg) => void
 }
 
-const Calendar = ({ events, handleDateClick, selectable }: Props) => {
+const Calendar = ({ events, selectable, handleEventClick, handleDateClick }: Props) => {
   return (
     <FullCalendar
       locale='ja'
@@ -25,6 +26,7 @@ const Calendar = ({ events, handleDateClick, selectable }: Props) => {
       selectable={selectable}
       select={handleDateClick}
       events={events}
+      eventClick={handleEventClick}
     />
   )
 }
