@@ -1,6 +1,6 @@
+import AdminCalendar from '@/app/admin/calendar'
 import AuthButton from '@/components/AuthButton'
 import DeployButton from '@/components/DeployButton'
-import AdminCalendar from '@/components/admin/Calender'
 import { createClient } from '@/utils/supabase/server'
 
 export default function Index() {

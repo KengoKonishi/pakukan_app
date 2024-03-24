@@ -5,42 +5,14 @@ import { useCallback, useEffect, useState } from 'react'
 import Calendar from '@/components/calendar'
 import { CustomEventInput } from '@/types/Calendar'
 import { createClient } from '@/utils/supabase/client'
-
-type GuestHouseOption = {
-  id: number
-  name: string
-  checked: boolean
-}
+import { GuestHouseOption, useGuestHouseOptions } from './useGuestHouseOptions'
 
 const AdminCalendar = () => {
-  const [guestHouseOptions, setGuestHouseOptions] = useState<GuestHouseOption[]>([])
+  const { guestHouseOptions, setGuestHouseOptions } = useGuestHouseOptions()
   const [schedules, setSchedules] = useState<CustomEventInput[]>([])
   const [isOpenModal, setIsOpenModal] = useState(false)
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
-
-  useEffect(() => {
-    const getGuestHouses = async () => {
-      const supabase = createClient()
-      const { data, error } = await supabase
-        .from('guest_houses')
-        .select('id, name')
-        .eq('owner_group_id', 1)
-
-      if (error) {
-        console.log(error)
-        return
-      }
-
-      const guestHouseOptions: GuestHouseOption[] = data.map((value) => ({
-        ...value,
-        checked: true,
-      }))
-
-      setGuestHouseOptions(guestHouseOptions)
-    }
-    void getGuestHouses()
-  }, [])
 
   useEffect(() => {
     void getSchedules(
@@ -147,8 +119,8 @@ const AdminCalendar = () => {
         <div className='w-3/6'>
           <Calendar
             events={schedules}
-            handleDateClick={handleDateClick}
             selectable={true}
+            handleDateClick={handleDateClick}
           />
         </div>
       </div>
