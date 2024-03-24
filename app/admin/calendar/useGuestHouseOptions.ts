@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { AdminMetaData } from '@/types/user_metadata'
 import { createClient } from '@/utils/supabase/client'
 
 export type GuestHouseOption = {
@@ -13,10 +14,23 @@ export const useGuestHouseOptions = () => {
   useEffect(() => {
     const fetchGuestHouses = async () => {
       const supabase = createClient()
+
+      const {
+        data: { user },
+        error: getUserError,
+      } = await supabase.auth.getUser()
+
+      if (getUserError) {
+        console.log(getUserError)
+        return
+      }
+
+      const userMetadata = user?.user_metadata as AdminMetaData
+
       const { data, error } = await supabase
         .from('guest_houses')
         .select('id, name')
-        .eq('owner_group_id', 1)
+        .eq('owner_group_id', userMetadata.owner_group_id)
 
       if (!error) {
         const options: GuestHouseOption[] = data.map(({ id, name }) => ({
