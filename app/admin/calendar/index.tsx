@@ -5,8 +5,8 @@ import { useCallback, useEffect, useState } from 'react'
 import Calendar from '@/components/calendar'
 import { CreateScheduleModal } from './components/CreateScheduleModal'
 import { GuestHouseCheckBoxList } from './components/GuestHouseCheckBoxList'
-import { useGuestHouseOptions } from './useGuestHouseOptions'
-import { useSchedules } from './useSchedules'
+import { useGuestHouseOptions } from './hooks/useGuestHouseOptions'
+import { useSchedules } from './hooks/useSchedules'
 
 const AdminCalendar = () => {
   const { guestHouseOptions, setGuestHouseOptions } = useGuestHouseOptions()

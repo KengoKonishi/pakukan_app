@@ -1,6 +1,6 @@
 'use client'
 
-import { GuestHouseOption } from '../useGuestHouseOptions'
+import { GuestHouseOption } from '../hooks/useGuestHouseOptions'
 
 export const GuestHouseCheckBoxList = ({
   guestHouseOptions,
