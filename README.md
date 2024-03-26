@@ -50,3 +50,14 @@ password
 cleaner@test.com
 password
 ```
+
+# Supabaseコマンド
+## DB定義をもとにTypeScriptの型を生成
+```
+supabase gen types typescript --project-id yhbeozxybcgzdmccyvzl > supabase/database.types.ts
+```
+
+## DB定義をもとにマイグレーションファイルを生成
+```
+supabase db pull
+```
