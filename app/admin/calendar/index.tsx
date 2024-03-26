@@ -87,6 +87,16 @@ const AdminCalendar = () => {
     }))
   }, [])
 
+  // 清掃スケジュール削除時の処理
+  const handleDeleteCleaningSchedule = useCallback(() => {
+    void fetchSchedules(
+      guestHouseOptions
+        .filter((option) => option.checked)
+        .map((option) => option.id.toString()),
+    )
+    // TODO: トーストを表示する
+  }, [guestHouseOptions])
+
   return (
     <div className='w-full'>
       {modalState.name === MODAL_NAMES.CREATE_SCHEDULE && (
@@ -107,6 +117,7 @@ const AdminCalendar = () => {
           <CleaningScheduleModal
             cleaningScheduleID={modalState.scheduleId}
             onClose={handleModalClose}
+            onDeleteSchedule={handleDeleteCleaningSchedule}
           />
         )}
       <div className='flex flex-row justify-center items-center w-full'>

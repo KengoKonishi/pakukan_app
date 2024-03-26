@@ -21,9 +21,11 @@ type CleaningSchedule = {
 export const CleaningScheduleModal = ({
   cleaningScheduleID,
   onClose,
+  onDeleteSchedule,
 }: {
   cleaningScheduleID: number
   onClose: () => void
+  onDeleteSchedule: () => void
 }) => {
   const [cleaningSchedule, setCleaningSchedule] = useState<CleaningSchedule | null>(null)
 
@@ -62,7 +64,7 @@ export const CleaningScheduleModal = ({
       }
 
       onClose()
-      // TODO: 最新のスケジュール取得してトースト表示
+      onDeleteSchedule()
     }
   }
 
