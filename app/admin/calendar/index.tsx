@@ -17,7 +17,6 @@ const MODAL_NAMES = {
 }
 
 const AdminCalendar = () => {
-  console.log('AdminCalendar')
   const { guestHouseOptions, setGuestHouseOptions } = useGuestHouseOptions()
   const { schedules, fetchSchedules } = useSchedules()
   const [modalState, setModalState] = useState({
@@ -36,7 +35,7 @@ const AdminCalendar = () => {
     )
   }, [guestHouseOptions])
 
-  // 民泊施設のチェックボックス変更時のイベント
+  // 民泊施設のチェックボックス変更時の処理
   const onChangeGuestHouseCheckBox = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value: id, checked } = event.target
 
@@ -47,7 +46,7 @@ const AdminCalendar = () => {
     )
   }
 
-  // カレンダーの日付クリック時のイベント
+  // カレンダーの日付クリック時の処理
   const handleDateClick = useCallback((selectInfo: DateSelectArg) => {
     setModalState((prevState) => ({
       ...prevState,
@@ -59,8 +58,8 @@ const AdminCalendar = () => {
     }))
   }, [])
 
+  // 登録済みのスケジュールクリック時の処理
   const handleEventClick = useCallback((clickInfo: EventClickArg) => {
-    console.log(clickInfo.event)
     if (clickInfo.event.extendedProps.eventType === 'stay') {
       setModalState((prevState) => ({
         ...prevState,
@@ -77,6 +76,7 @@ const AdminCalendar = () => {
     }
   }, [])
 
+  // モーダル閉じる処理 (共通で使用)
   const handleModalClose = useCallback(() => {
     setModalState((prevState) => ({
       ...prevState,
