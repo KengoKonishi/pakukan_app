@@ -25,6 +25,7 @@ module.exports = {
           order: "asc",
         },
       }
-    ]
+    ],
+    "react-hooks/rules-of-hooks": "error",
   }
 }  

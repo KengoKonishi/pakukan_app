@@ -31,7 +31,7 @@ export const useSchedules = () => {
         start: schedule.start_datetime,
         end: schedule.end_datetime,
         eventType: 'stay',
-        scheduleId: schedule.id.toString(),
+        scheduleId: schedule.id,
       } as CustomEventInput)
     })
 
@@ -54,7 +54,7 @@ export const useSchedules = () => {
         start: schedule.start_datetime,
         end: schedule.end_datetime,
         eventType: 'cleaning',
-        scheduleId: schedule.id.toString(),
+        scheduleId: schedule.id,
       } as CustomEventInput)
     })
 
