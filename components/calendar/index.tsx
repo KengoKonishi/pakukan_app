@@ -7,6 +7,7 @@ import allLocales from '@fullcalendar/core/locales-all'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import FullCalendar from '@fullcalendar/react'
+import timeGridPlugin from '@fullcalendar/timegrid'
 import { CustomEventInput } from '@/types/Calendar'
 
 type Props = {
@@ -21,12 +22,17 @@ const Calendar = ({ events, selectable, handleEventClick, handleDateClick }: Pro
     <FullCalendar
       locale='ja'
       locales={allLocales}
-      plugins={[dayGridPlugin, interactionPlugin]}
+      plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
       initialView='dayGridMonth'
       selectable={selectable}
       select={handleDateClick}
       events={events}
       eventClick={handleEventClick}
+      headerToolbar={{
+        left: 'prev,next',
+        center: 'title',
+        right: 'timeGridWeek,dayGridMonth',
+      }}
     />
   )
 }
