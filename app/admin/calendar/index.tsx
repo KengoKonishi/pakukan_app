@@ -48,12 +48,23 @@ const AdminCalendar = () => {
 
   // カレンダーの日付クリック時の処理
   const handleDateClick = useCallback((selectInfo: DateSelectArg) => {
+    const startDate = new Date(selectInfo.startStr)
+    const endDate = new Date(selectInfo.endStr)
+    if (selectInfo.allDay) {
+      // NOTE: 月表示の場合 選択した日付を取得するために1日引く必要がある
+      endDate.setDate(endDate.getDate() - 1)
+    }
+
     setModalState((prevState) => ({
       ...prevState,
       name: MODAL_NAMES.CREATE_SCHEDULE,
-      startDate: selectInfo.startStr,
-      // TODO: 終了日が1日ずれるので調査する。タイムゾーンが違う？
-      endDate: selectInfo.endStr,
+      // NOTE: 月表示の場合は日付まで、週表示の場合は時間まで表示する
+      startDate: selectInfo.allDay
+        ? startDate.toLocaleDateString()
+        : startDate.toLocaleString(),
+      endDate: selectInfo.allDay
+        ? endDate.toLocaleDateString()
+        : endDate.toLocaleString(),
       scheduleId: 0,
     }))
   }, [])
