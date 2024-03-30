@@ -53,85 +53,87 @@ export const StayScheduleModal = ({
   }
 
   return (
-    <div
-      className='fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-10'
-      onClick={onClose}
-    >
-      {/* モーダル全体 */}
+    staySchedule && (
       <div
-        className='flex flex-col justify-center items-center w-4/5 p-5 my-24 bg-white border z-20'
-        onClick={(e) => e.stopPropagation()}
+        className='fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-10'
+        onClick={onClose}
       >
-        {/* モーダルヘッダー */}
-        <div className='flex justify-end w-full'>
-          <button
-            onClick={onClose}
-            type='button'
-            aria-label='閉じる'
-            className='flex justify-center items-center bg-transparent border-none text-4xl h-7.5 w-7.5 rounded-lg cursor-pointer'
-          >
-            ×
-          </button>
-        </div>
-        {/* モーダルコンテンツ */}
-        <div className='w-3/5'>
-          <div className='flex justify-start'>
-            <h3 className='text-2xl'>宿泊スケジュール</h3>
-          </div>
-          <div className='flex justify-end'>
+        {/* モーダル全体 */}
+        <div
+          className='flex flex-col justify-center items-center w-4/5 p-5 my-24 bg-white border z-20'
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* モーダルヘッダー */}
+          <div className='flex justify-end w-full'>
             <button
-              className='py-2 px-4 rounded-md no-underline'
-              onClick={onClickEditButton}
+              onClick={onClose}
+              type='button'
+              aria-label='閉じる'
+              className='flex justify-center items-center bg-transparent border-none text-4xl h-7.5 w-7.5 rounded-lg cursor-pointer'
             >
-              編集
+              ×
             </button>
           </div>
-          <div className='flex gap-20 p-5'>
-            <div>
-              <p>チェックイン日時</p>
-              {staySchedule?.start_datetime}
+          {/* モーダルコンテンツ */}
+          <div className='w-3/5'>
+            <div className='flex justify-start'>
+              <h3 className='text-2xl'>宿泊スケジュール</h3>
             </div>
-            <div>
-              <p>チェックアウト日時</p>
-              {staySchedule?.end_datetime}
+            <div className='flex justify-end'>
+              <button
+                className='py-2 px-4 rounded-md no-underline'
+                onClick={onClickEditButton}
+              >
+                編集
+              </button>
             </div>
-          </div>
-          <div className='flex gap-20 p-5'>
-            <div>
-              <p>宿泊施設</p>
-              {staySchedule?.guest_houses?.name}
+            <div className='flex gap-20 p-5'>
+              <div>
+                <p>チェックイン日時</p>
+                {new Date(staySchedule.start_datetime).toLocaleString()}
+              </div>
+              <div>
+                <p>チェックアウト日時</p>
+                {new Date(staySchedule.end_datetime).toLocaleString()}
+              </div>
             </div>
-            <div>
-              <p>宿泊者名</p>
-              {staySchedule?.guest_name}
+            <div className='flex gap-20 p-5'>
+              <div>
+                <p>宿泊施設</p>
+                {staySchedule.guest_houses?.name}
+              </div>
+              <div>
+                <p>宿泊者名</p>
+                {staySchedule.guest_name}
+              </div>
             </div>
-          </div>
-          <div className='flex gap-20 p-5'>
-            <div>
-              <p>宿泊人数</p>
-              {staySchedule?.numbers_of_guests}
+            <div className='flex gap-20 p-5'>
+              <div>
+                <p>宿泊人数</p>
+                {staySchedule.numbers_of_guests}
+              </div>
             </div>
-          </div>
-          <div className='flex gap-20 p-5'>
-            <div>
-              <p>アメニティ類の情報</p>
-              {staySchedule?.amenities_info ?? 'なし'}
+            <div className='flex gap-20 p-5'>
+              <div>
+                <p>アメニティ類の情報</p>
+                {staySchedule.amenities_info ?? 'なし'}
+              </div>
             </div>
-          </div>
-          <div className='flex gap-20 p-5'>
-            <div>
-              <p>荷物の預かり情報</p>
-              {staySchedule?.bag_recieve_info ?? 'なし'}
+            <div className='flex gap-20 p-5'>
+              <div>
+                <p>荷物の預かり情報</p>
+                {staySchedule.bag_recieve_info ?? 'なし'}
+              </div>
             </div>
-          </div>
-          <div className='flex gap-20 p-5'>
-            <div>
-              <p>その他</p>
-              {staySchedule?.others ?? 'なし'}
+            <div className='flex gap-20 p-5'>
+              <div>
+                <p>その他</p>
+                {staySchedule.others ?? 'なし'}
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    )
   )
 }
