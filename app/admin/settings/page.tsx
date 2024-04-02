@@ -1,12 +1,11 @@
+import SettingForm from '@/app/admin/settings/components/settingForm'
 import AuthButton from '@/components/AuthButton'
 import DeployButton from '@/components/DeployButton'
 import SideMenu from '@/components/admin/SideMenu'
 import { createClient } from '@/utils/supabase/server'
 
-export default async function AdminSettingsPage() {
+export default function AdminSettingsPage() {
   const canInitSupabaseClient = () => {
-    // This function is just for the interactive tutorial.
-    // Feel free to remove it once you have Supabase connected.
     try {
       createClient()
       return true
@@ -15,17 +14,6 @@ export default async function AdminSettingsPage() {
     }
   }
   const isSupabaseConnected = canInitSupabaseClient()
-
-  const supabase = createClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  //   const handleSubmit = async (e) => {
-  //     e.preventDefault()
-  //     // フォームの更新ロジックをここに追加
-  //   }
 
   return (
     <div className='flex'>
@@ -45,49 +33,7 @@ export default async function AdminSettingsPage() {
               <h2 className='font-bold text-4xl mb-4'>管理者情報編集</h2>
             </main>
           </div>
-          {/* <form onSubmit={handleSubmit}> */}
-          <form>
-            <div>
-              <label htmlFor='name'>名前</label>
-              <input
-                type='text'
-                id='name'
-                value={user?.user_metadata.name}
-                // onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor='email'>メールアドレス</label>
-              <input
-                type='email'
-                id='email'
-                value={user?.user_metadata.email}
-                // onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor='password'>パスワード</label>
-              <input
-                type='password'
-                id='password'
-                placeholder='8文字以上の英字または数字のみ'
-                // onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor='confirmPassword'>確認用パスワード</label>
-              <input
-                type='password'
-                id='confirmPassword'
-                placeholder='8文字以上の英字または数字のみ'
-                // onChange={(e) => setConfirmPassword(e.target.value)}
-              />
-            </div>
-            <button type='submit'>更新する</button>
-          </form>
+          <SettingForm></SettingForm>
         </div>
       </div>
     </div>
