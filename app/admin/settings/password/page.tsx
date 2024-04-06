@@ -32,7 +32,7 @@ export default function AdminSettingsPage() {
         </nav>
         {/* TODO:bg-amber-50の背景色がh-fullになるように修正必要  */}
         <div className='flex-1 bg-amber-50 w-full'>
-          <Title title='管理者情報編集' />
+          <Title title='管理者情報編集　パスワード変更' />
           <div className='pl-10 pt-7'>
             <SettingForm />
           </div>
