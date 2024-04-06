@@ -11,12 +11,6 @@ export default function Login({ searchParams }: { searchParams: { message: strin
     const password = formData.get('password') as string
     const supabase = createClient()
 
-    // 管理者テーブルへの検索
-    const { data } = await supabase.from('admins').select().eq('email', email)
-    if (!data || data.length === 0) {
-      return redirect('/admin/login?message=Could not authenticate user')
-    }
-
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
