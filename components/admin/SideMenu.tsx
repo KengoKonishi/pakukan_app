@@ -23,7 +23,7 @@ const SideMenu = () => {
           <MenuItem link='/admin/cleaning_status_list/'>清掃状況管理</MenuItem>
           <MenuItem link='/admin/guesthouse_list/'>民泊施設情報</MenuItem>
           <MenuItem link='/admin/staff_list/'>清掃員情報</MenuItem>
-          <MenuItem link='/admin/settings/'>管理者情報</MenuItem>
+          <MenuItemAdminSettings />
           <MenuItem link=''>ログアウト</MenuItem>
         </div>
       </div>
@@ -57,6 +57,38 @@ const MenuItemCalender = () => {
         <div className='text-sm ml-2'>
           <MenuItem link='admin/stay_schedule/create'>宿泊スケジュール作成</MenuItem>
           <MenuItem link='admin/staff_schedule/create'>清掃員スケジュール作成</MenuItem>
+        </div>
+      )}
+    </div>
+  )
+}
+
+const MenuItemAdminSettings = () => {
+  const [isExpanded, setIsExpanded] = useState(false)
+
+  const handleExpand = () => {
+    setIsExpanded(!isExpanded)
+  }
+
+  const handleMouseEnter = () => {
+    setIsExpanded(true)
+  }
+
+  const handleMouseLeave = () => {
+    setIsExpanded(false)
+  }
+
+  return (
+    <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+      <div className='text-start bg-orange-200 text-gray-950 pl-4 my-2 py-2 hover:bg-orange-100 hover:text-gray-600'>
+        <Link href='' className=''>
+          <div onClick={handleExpand}>{isExpanded ? '▼' : '▶️'} 管理者情報</div>
+        </Link>
+      </div>
+      {isExpanded && (
+        <div className='text-sm ml-2'>
+          <MenuItem link='/admin/settings/basic_info/'>基本情報変更</MenuItem>
+          <MenuItem link='/admin/settings/password/'>パスワード変更</MenuItem>
         </div>
       )}
     </div>
