@@ -43,10 +43,10 @@ export default function SettingForm() {
     setSuccessMessage('')
 
     // 氏名の正規表現
-    const namePattern = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+/
+    const prohibitedNamePattern = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+/
 
     // 氏名のバリデーション
-    if (!namePattern.test(name)) {
+    if (prohibitedNamePattern.test(name)) {
       setValidationError('氏名に禁止文字が使用されています。')
       return
     }
