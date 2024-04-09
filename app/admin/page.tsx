@@ -1,3 +1,4 @@
+import AdminCalendar from '@/app/admin/calendar'
 import AuthButton from '@/components/AuthButton'
 import DeployButton from '@/components/DeployButton'
 import { createClient } from '@/utils/supabase/server'
@@ -25,9 +26,10 @@ export default function Index() {
         </div>
       </nav>
 
-      <div className='animate-in flex-1 flex flex-col gap-20 opacity-0 max-w-4xl px-3'>
-        <main className='flex-1 flex flex-col gap-6'>
+      <div className='flex-1 flex flex-col justify-center items-center w-full gap-20 px-3'>
+        <main className='flex-1 flex flex-col justify-center items-center w-full gap-6'>
           <h2 className='font-bold text-4xl mb-4'>管理者 カレンダーダッシュボード画面</h2>
+          <AdminCalendar />
         </main>
       </div>
 
