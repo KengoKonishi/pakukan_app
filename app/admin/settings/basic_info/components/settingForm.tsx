@@ -2,15 +2,14 @@
 import React, { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import SubmitButton from '../../components/SubmitButton'
-// import Validation from './Validation'
 
 export default function SettingForm() {
-  const [name, setName] = useState<string>('')
-  const [email, setEmail] = useState<string>('')
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [validationError, setValidationError] = useState<string | null>(null)
-  const [successMessage, setSuccessMessage] = useState<string>('')
+  const [error, setError] = useState('')
+  const [validationError, setValidationError] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
   const supabase = createClient()
 
   useEffect(() => {
@@ -21,30 +20,30 @@ export default function SettingForm() {
         } = await supabase.auth.getUser()
         console.log(user)
 
-        setName(user?.user_metadata.name || '')
+        setName((user?.user_metadata.name as string) || '')
         setEmail(user?.email || '')
-        setLoading(false)
-      } catch (error) {
-        setError(error.message)
+      } catch (e: unknown) {
+        if (e instanceof Error) {
+          setError(e.message)
+        }
+      } finally {
         setLoading(false)
       }
     }
 
-    fetchUserData().catch((error) => {
-      setError(error.message)
-      setLoading(false)
-    })
+    void fetchUserData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault()
 
     // メッセージをリセットする
-    setValidationError(null)
+    setValidationError('')
     setSuccessMessage('')
 
     // 氏名の正規表現
-    const namePattern = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/
+    const namePattern = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+/
 
     // 氏名のバリデーション
     if (!namePattern.test(name)) {
@@ -79,10 +78,12 @@ export default function SettingForm() {
       setTimeout(() => {
         setSuccessMessage('更新が成功しました')
       }, 1000)
-    } catch (error) {
+    } catch (e: unknown) {
       // 更新処理が失敗した場合の処理
       console.error('フォームの更新処理が失敗しました:', error)
-      setError(error.message)
+      if (e instanceof Error) {
+        setError(e.message)
+      }
     }
   }
 
@@ -96,7 +97,10 @@ export default function SettingForm() {
 
   return (
     <div className='w-5/6 mx-auto'>
-      <form onSubmit={handleSubmit} className='flex flex-col gap-4 max-w-md'>
+      <form
+        onSubmit={(e: React.FormEvent<HTMLFormElement>) => void handleSubmit(e)}
+        className='flex flex-col gap-4 max-w-md'
+      >
         {successMessage && (
           <div className='text-blue-500 px-4 py-2 bg-yellow-200 rounded-md font-bold'>
             {successMessage}

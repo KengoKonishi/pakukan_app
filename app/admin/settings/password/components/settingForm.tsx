@@ -4,13 +4,13 @@ import { createClient } from '@/utils/supabase/client'
 import SubmitButton from '../../components/SubmitButton'
 
 export default function SettingForm() {
-  const [oldPassword, setOldPassword] = useState<string>('')
-  const [newPassword, setNewPassword] = useState<string>('')
-  const [confirmPassword, setConfirmPassword] = useState<string>('')
+  const [oldPassword, setOldPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [validationError, setValidationError] = useState<string | null>(null)
-  const [successMessage, setSuccessMessage] = useState<string>('')
+  const [error, setError] = useState('')
+  const [validationError, setValidationError] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
   const supabase = createClient()
 
   useEffect(() => {
@@ -20,23 +20,23 @@ export default function SettingForm() {
           data: { user },
         } = await supabase.auth.getUser()
         console.log(user)
-        setLoading(false)
-      } catch (error) {
-        setError(error.message)
+      } catch (e: unknown) {
+        if (e instanceof Error) {
+          setError(e.message)
+        }
+      } finally {
         setLoading(false)
       }
     }
 
-    fetchUserData().catch((error) => {
-      setError(error.message)
-      setLoading(false)
-    })
+    void fetchUserData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault()
     // メッセージをリセットする
-    setValidationError(null)
+    setValidationError('')
     setSuccessMessage('')
 
     // 新しいパスワードが古いパスワードと同じでないことを確認する
@@ -78,14 +78,18 @@ export default function SettingForm() {
       setTimeout(() => {
         setSuccessMessage('更新が成功しました')
       }, 1000)
-    } catch (error) {
-      if (error.message === 'New password should be different from the old password.') {
-        // カスタムのエラーメッセージを表示
-        setValidationError('古いパスワードが現在設定されているパスワードと一致しません。')
-      } else {
-        // 更新処理が失敗した場合の処理
-        console.log('フォームの更新処理が失敗しました:')
-        setError(error.message)
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        if (e.message === 'New password should be different from the old password.') {
+          // カスタムのエラーメッセージを表示
+          setValidationError(
+            '古いパスワードが現在設定されているパスワードと一致しません。',
+          )
+        } else {
+          // 更新処理が失敗した場合の処理
+          console.log('フォームの更新処理が失敗しました:')
+          setError(e.message)
+        }
       }
     }
   }
@@ -100,7 +104,10 @@ export default function SettingForm() {
 
   return (
     <div className='w-5/6 mx-auto'>
-      <form onSubmit={handleSubmit} className='flex flex-col gap-4 w-full'>
+      <form
+        onSubmit={(e: React.FormEvent<HTMLFormElement>) => void handleSubmit(e)}
+        className='flex flex-col gap-4 w-full'
+      >
         {successMessage && (
           <div className='text-blue-500 px-4 py-2 bg-yellow-200 rounded-md font-bold'>
             {successMessage}
