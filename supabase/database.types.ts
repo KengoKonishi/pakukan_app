@@ -184,7 +184,6 @@ export type Database = {
           id: number
           is_deleted: number | null
           name: string
-          owner_group_id: number
           updated_at: string | null
         }
         Insert: {
@@ -192,7 +191,6 @@ export type Database = {
           id?: number
           is_deleted?: number | null
           name: string
-          owner_group_id: number
           updated_at?: string | null
         }
         Update: {
@@ -200,7 +198,6 @@ export type Database = {
           id?: number
           is_deleted?: number | null
           name?: string
-          owner_group_id?: number
           updated_at?: string | null
         }
         Relationships: [
