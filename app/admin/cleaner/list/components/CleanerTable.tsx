@@ -7,77 +7,86 @@ import EditButton from './EditButton'
 interface DataItem {
   id: number
   name: string
+  email: string
+  tel: string | null
 }
 
 const GuestHouseTable = () => {
-  const [guestHouses, setGuestHouses] = useState<DataItem[]>([])
+  const [cleaners, setCleaners] = useState<DataItem[]>([])
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(10) // 1ページあたりのアイテム数
   const supabase = createClient()
   const [successMessage, setSuccessMessage] = useState('')
+  const [userId, setUserId] = useState('')
 
   useEffect(() => {
-    const fetchGuestHouses = async () => {
+    const fetchCleaners = async () => {
       try {
-        const { data, error } = await supabase
-          .from('guest_houses')
-          .select('id, name')
-          .eq('is_deleted', 0)
-          .order('id', { ascending: true })
-        if (error) {
+        const { data, error } = await supabase.auth.getUser()
+        const currentUser = data?.user
+
+        if (!currentUser) {
           throw error
         }
-        setGuestHouses(data)
+
+        const { data: cleanersData, error: cleanersError } = await supabase
+          .from('cleaners')
+          .select('id, name, email, tel')
+          .eq('is_deleted', 0)
+          .eq('user_id', currentUser.id.toString())
+          .order('id', { ascending: true })
+
+        if (cleanersError) {
+          throw cleanersError
+        }
+        setCleaners(cleanersData)
+        setUserId(currentUser.id)
         setLoading(false)
       } catch (error) {
-        console.error('Error fetching guest houses:', error)
+        console.error('Error fetching cleaners:', error)
       }
     }
 
-    void fetchGuestHouses()
+    void fetchCleaners()
   }, [supabase])
 
-  // レコード削除
-  const handleDelete = async (id: number): Promise<void> => {
+  const handleDelete = async (cleanerId: number, userId: string): Promise<void> => {
     setSuccessMessage('')
     try {
       const { error } = await supabase
-        .from('guest_houses')
+        .from('cleaners')
         .update({ is_deleted: 1 })
-        .eq('id', id)
+        .eq('id', cleanerId)
       if (error) {
         throw error
       }
 
-      // 削除後にデータを再取得して更新する
-      const { data: updatedGuestHouses, error: fetchError } = await supabase
-        .from('guest_houses')
-        .select('id, name')
+      const { data: updatedCleaners, error: fetchError } = await supabase
+        .from('cleaners')
+        .select('id, name, email, tel')
         .eq('is_deleted', 0)
+        .eq('user_id', userId)
         .order('id', { ascending: true })
       if (fetchError) {
         throw fetchError
       }
 
-      // すべての更新処理が成功した場合の処理
       console.log('フォームの削除処理が成功しました')
       await new Promise((resolve) => setTimeout(resolve, 1000))
       setSuccessMessage('削除しました')
-      setGuestHouses(updatedGuestHouses)
+      setCleaners(updatedCleaners)
     } catch (error) {
-      console.error('Error deleting guest house:', error)
+      console.error('Error deleting cleaner:', error)
     }
   }
 
-  // 現在のページのデータを取得
   const indexOfLastItem = currentPage * itemsPerPage
   const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const currentGuestHouses = guestHouses.slice(indexOfFirstItem, indexOfLastItem)
+  const currentCleaners = cleaners.slice(indexOfFirstItem, indexOfLastItem)
 
-  // ページネーションのページ番号を生成
   const pageNumbers = []
-  for (let i = 1; i <= Math.ceil(guestHouses.length / itemsPerPage); i++) {
+  for (let i = 1; i <= Math.ceil(cleaners.length / itemsPerPage); i++) {
     pageNumbers.push(i)
   }
 
@@ -103,9 +112,21 @@ const GuestHouseTable = () => {
             </th>
             <th
               scope='col'
-              className='px-6 py-3 text-left uppercase tracking-wider border-b border-r w-4/12'
+              className='px-6 py-3 text-left uppercase tracking-wider border-b border-r w-3/12'
             >
               名前
+            </th>
+            <th
+              scope='col'
+              className='px-6 py-3 text-left uppercase tracking-wider border-b border-r w-3/12'
+            >
+              メールアドレス
+            </th>
+            <th
+              scope='col'
+              className='px-6 py-3 text-left uppercase tracking-wider border-b border-r w-3/12'
+            >
+              電話番号
             </th>
             <th
               scope='col'
@@ -114,19 +135,25 @@ const GuestHouseTable = () => {
           </tr>
         </thead>
         <tbody className='bg-white divide-y divide-gray-200'>
-          {currentGuestHouses.map((guesthouse, index) => (
+          {currentCleaners.map((cleaner, index) => (
             <tr key={index + 1} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
               <td className='px-6 py-2 whitespace-nowrap border-b border-r w-1/12'>
                 {index + 1}
               </td>
-              <td className='px-6 py-2 whitespace-nowrap border-b border-r w-6/12'>
-                {guesthouse.name}
+              <td className='px-6 py-2 whitespace-nowrap border-b border-r w-3/12'>
+                {cleaner.name}
               </td>
-              <td className='px-6 py-2 whitespace-nowrap border-b border-r w-1/12'>
+              <td className='px-6 py-2 whitespace-nowrap border-b border-r w-3/12'>
+                {cleaner.email}
+              </td>
+              <td className='px-6 py-2 whitespace-nowrap border-b border-r w-3/12'>
+                {cleaner.tel}
+              </td>
+              <td className='px-6 py-2 whitespace-nowrap border-b border-r w-3/12'>
                 <div className='flex justify-center'>
-                  <EditButton label='編集' id={guesthouse.id} />
-                  <span className='mx-6'></span> {/* ボタン間の余白 */}
-                  <DeleteButton onClick={() => handleDelete(guesthouse.id)} />
+                  <EditButton label='編集' id={cleaner.id} />
+                  <span className='mx-6'></span>
+                  <DeleteButton onClick={() => handleDelete(cleaner.id, userId)} />
                 </div>
               </td>
             </tr>

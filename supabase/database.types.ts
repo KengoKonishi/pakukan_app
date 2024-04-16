@@ -62,7 +62,6 @@ export type Database = {
           is_deleted: number | null
           line_access_token: string | null
           name: string
-          owner_group_id: number | null
           tel: string | null
           updated_at: string | null
           user_id: string | null
@@ -74,7 +73,6 @@ export type Database = {
           is_deleted?: number | null
           line_access_token?: string | null
           name: string
-          owner_group_id?: number | null
           tel?: string | null
           updated_at?: string | null
           user_id?: string | null
@@ -86,19 +84,11 @@ export type Database = {
           is_deleted?: number | null
           line_access_token?: string | null
           name?: string
-          owner_group_id?: number | null
           tel?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: 'public_cleaners_owner_group_id_fkey'
-            columns: ['owner_group_id']
-            isOneToOne: false
-            referencedRelation: 'owner_groups'
-            referencedColumns: ['id']
-          },
           {
             foreignKeyName: 'public_cleaners_user_id_fkey'
             columns: ['user_id']
