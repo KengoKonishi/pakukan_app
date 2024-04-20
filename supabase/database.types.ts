@@ -60,7 +60,7 @@ export type Database = {
           email: string
           id: number
           is_deleted: number | null
-          line_access_token: string | null
+          line_user_id: string
           name: string
           tel: string | null
           updated_at: string | null
@@ -71,7 +71,7 @@ export type Database = {
           email: string
           id?: number
           is_deleted?: number | null
-          line_access_token?: string | null
+          line_user_id?: string
           name: string
           tel?: string | null
           updated_at?: string | null
@@ -82,7 +82,7 @@ export type Database = {
           email?: string
           id?: number
           is_deleted?: number | null
-          line_access_token?: string | null
+          line_user_id?: string
           name?: string
           tel?: string | null
           updated_at?: string | null
@@ -100,7 +100,7 @@ export type Database = {
       }
       cleaning_schedules: {
         Row: {
-          cleaner_id: number
+          cleaner_id: number | null
           cleaning_status_id: number
           created_at: string | null
           end_datetime: string
@@ -110,7 +110,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
-          cleaner_id: number
+          cleaner_id?: number | null
           cleaning_status_id: number
           created_at?: string | null
           end_datetime: string
@@ -120,7 +120,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
-          cleaner_id?: number
+          cleaner_id?: number | null
           cleaning_status_id?: number
           created_at?: string | null
           end_datetime?: string
@@ -190,15 +190,7 @@ export type Database = {
           name?: string
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: 'public_guest_houses_owner_group_id_fkey'
-            columns: ['owner_group_id']
-            isOneToOne: false
-            referencedRelation: 'owner_groups'
-            referencedColumns: ['id']
-          },
-        ]
+        Relationships: []
       }
       owner_groups: {
         Row: {
