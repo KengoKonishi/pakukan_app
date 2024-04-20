@@ -1,7 +1,9 @@
-console.log('Hello from Functions!')
+console.log('Functions start')
+import { createClient } from 'https://esm.sh/@supabase/supabase-js'
 import * as crypto from 'https://deno.land/std@0.166.0/node/crypto.ts'
 
 const LINE_REPLY_MESSAGE_URL = 'https://api.line.me/v2/bot/message/reply'
+const LINE_PUSH_MESSAGE_URL = 'https://api.line.me/v2/bot/message/push'
 const CLEANER_REGISTRATION_FORM_BASE_URL =
   'https://docs.google.com/forms/d/e/1FAIpQLSfSBlpF_8oKHYkn5VNQsIb4EgYfA0ivi3f4I8LS9sjdJVa5rA/viewform?usp=pp_url&entry.455572547='
 
@@ -41,6 +43,12 @@ Deno.serve(async (request) => {
 
 // NOTE: 各eventに対する処理
 const processEvent = async (event) => {
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+  )
+  console.log(supabase)
+
   const message = event.message
 
   // テキストメッセージ以外は処理しない
@@ -51,10 +59,7 @@ const processEvent = async (event) => {
   }
 
   const messageText = message.text
-  console.log(messageText)
-  const source = event.source.userId
   const lineUserId = event.source.userId
-  console.log(source)
 
   const headers = {
     Authorization: `Bearer ${Deno.env.get('LINE_CHANNEL_ACCESS_TOKEN') ?? ''}`,
@@ -62,6 +67,39 @@ const processEvent = async (event) => {
   }
 
   if (messageText === 'プロフィール登録') {
+    const { data: cleanersData } = await supabase
+      .from('cleaners')
+      .select()
+      .eq('line_user_id', lineUserId)
+
+    // すでにLINEUSERIDが登録されている場合
+    if (cleanersData && cleanersData.length !== 0) {
+      const replyMessages = [
+        {
+          type: 'text',
+          text: 'プロフィール登録済みです。\n登録情報に変更がある場合はお知らせください。',
+        },
+      ]
+
+      const dataString = JSON.stringify({
+        to: lineUserId,
+        messages: replyMessages,
+      })
+
+      try {
+        await fetch(LINE_PUSH_MESSAGE_URL, {
+          method: 'POST',
+          headers: headers,
+          body: dataString,
+        })
+      } catch (e) {
+        console.error(e)
+      }
+
+      return
+    }
+
+    // LINEUSERIDが未登録の場合
     const replyMessages = [
       {
         type: 'text',
