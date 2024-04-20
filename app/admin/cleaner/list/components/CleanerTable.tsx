@@ -89,6 +89,9 @@ const GuestHouseTable = () => {
   for (let i = 1; i <= Math.ceil(cleaners.length / itemsPerPage); i++) {
     pageNumbers.push(i)
   }
+  const calculateStartIndex = (currentPage: number, itemsPerPage: number) => {
+    return (currentPage - 1) * itemsPerPage + 1
+  }
 
   if (loading) {
     return <div>Loading...</div>
@@ -138,7 +141,7 @@ const GuestHouseTable = () => {
           {currentCleaners.map((cleaner, index) => (
             <tr key={index + 1} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
               <td className='px-6 py-2 whitespace-nowrap border-b border-r w-1/12'>
-                {index + 1}
+                {calculateStartIndex(currentPage, itemsPerPage) + index}
               </td>
               <td className='px-6 py-2 whitespace-nowrap border-b border-r w-3/12'>
                 {cleaner.name}
@@ -153,7 +156,9 @@ const GuestHouseTable = () => {
                 <div className='flex justify-center'>
                   <EditButton label='編集' id={cleaner.id} />
                   <span className='mx-6'></span>
-                  <DeleteButton onClick={() => handleDelete(cleaner.id, userId)} />
+                  <DeleteButton
+                    onConfirmDelete={() => handleDelete(cleaner.id, userId)}
+                  />
                 </div>
               </td>
             </tr>
