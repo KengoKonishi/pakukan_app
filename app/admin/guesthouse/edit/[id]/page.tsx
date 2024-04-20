@@ -17,7 +17,7 @@ export default function EditPage() {
   const isSupabaseConnected = canInitSupabaseClient()
 
   return (
-    <div className='flex w-full'>
+    <div className='flex w-full h-full'>
       <div className='flex-shrink-0 w-80'>
         <SideMenu />
       </div>
@@ -30,7 +30,6 @@ export default function EditPage() {
             {isSupabaseConnected && <AuthButton loginUrl='/admin/login' />}
           </div>
         </nav>
-        {/* TODO:bg-amber-50の背景色がh-fullになるように修正必要  */}
         <div className='flex-1 bg-amber-50 w-full'>
           <Title title='民泊施設情報　編集' />
           <div className='pl-10 pt-7'></div>
