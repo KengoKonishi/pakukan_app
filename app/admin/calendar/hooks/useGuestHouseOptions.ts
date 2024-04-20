@@ -14,7 +14,10 @@ export const useGuestHouseOptions = () => {
     const fetchGuestHouses = async () => {
       const supabase = createClient()
 
-      const { data, error } = await supabase.from('guest_houses').select('id, name')
+      const { data, error } = await supabase
+        .from('guest_houses')
+        .select('id, name')
+        .eq('is_deleted', 0)
 
       if (!error) {
         const options: GuestHouseOption[] = data.map(({ id, name }) => ({
