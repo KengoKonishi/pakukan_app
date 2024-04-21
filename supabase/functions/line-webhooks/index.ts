@@ -47,18 +47,7 @@ const processEvent = async (event) => {
     Deno.env.get('SUPABASE_URL') ?? '',
     Deno.env.get('SUPABASE_ANON_KEY') ?? '',
   )
-  console.log(supabase)
 
-  const message = event.message
-
-  // テキストメッセージ以外は処理しない
-  // TODO: ポストバックイベントのみ処理するように修正してもいいかも
-  if (message.type !== 'text') {
-    console.log('message type !== text')
-    return
-  }
-
-  const messageText = message.text
   const lineUserId = event.source.userId
 
   const headers = {
@@ -66,7 +55,13 @@ const processEvent = async (event) => {
     'Content-Type': 'application/json',
   }
 
-  if (messageText === 'プロフィール登録') {
+  // 公式アカウントが追加されたとき もしくは プロフィール登録と入力されたとき
+  if (
+    event.type === 'follow' ||
+    (event.type === 'message' &&
+      event.message.type === 'text' &&
+      event.message.text === 'プロフィール登録')
+  ) {
     const { data: cleanersData } = await supabase
       .from('cleaners')
       .select()
