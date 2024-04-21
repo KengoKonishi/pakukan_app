@@ -42,6 +42,41 @@ export type Database = {
         }
         Relationships: []
       }
+      cleaning_reports: {
+        Row: {
+          cleaning_schedule_id: number | null
+          comment: string | null
+          created_at: string | null
+          form_url: string | null
+          id: number
+          updated_at: string | null
+        }
+        Insert: {
+          cleaning_schedule_id?: number | null
+          comment?: string | null
+          created_at?: string | null
+          form_url?: string | null
+          id?: number
+          updated_at?: string | null
+        }
+        Update: {
+          cleaning_schedule_id?: number | null
+          comment?: string | null
+          created_at?: string | null
+          form_url?: string | null
+          id?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'public_cleaning_reports_cleaning_schedule_id_fkey'
+            columns: ['cleaning_schedule_id']
+            isOneToOne: false
+            referencedRelation: 'cleaning_schedules'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       cleaning_schedules: {
         Row: {
           cleaner_id: number | null
