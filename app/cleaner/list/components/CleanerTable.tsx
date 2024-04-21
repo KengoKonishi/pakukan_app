@@ -34,7 +34,6 @@ const GuestHouseTable = () => {
           .from('cleaners')
           .select('id, name, email, tel')
           .eq('is_deleted', 0)
-          .eq('user_id', currentUser.id.toString())
           .order('id', { ascending: true })
 
         if (cleanersError) {
@@ -66,7 +65,6 @@ const GuestHouseTable = () => {
         .from('cleaners')
         .select('id, name, email, tel')
         .eq('is_deleted', 0)
-        .eq('user_id', userId)
         .order('id', { ascending: true })
       if (fetchError) {
         throw fetchError
