@@ -21,8 +21,8 @@ const SideMenu = () => {
         <div className={`menu-items py-2 ${isOpen ? 'open' : ''}`}>
           <MenuItemCalender />
           <MenuItem link='/admin/cleaning_status_list/'>清掃状況管理</MenuItem>
-          <MenuItem link='/admin/guesthouse_list/'>民泊施設情報</MenuItem>
-          <MenuItem link='/admin/staff_list/'>清掃員情報</MenuItem>
+          <MenuItem link='/admin/guesthouse/list/'>民泊施設情報</MenuItem>
+          <MenuItem link='/admin/cleaner/list/'>清掃員情報</MenuItem>
           <MenuItemAdminSettings />
           <MenuItem link=''>ログアウト</MenuItem>
         </div>

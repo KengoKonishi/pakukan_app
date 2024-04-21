@@ -17,7 +17,7 @@ export default function AdminSettingsPage() {
   const isSupabaseConnected = canInitSupabaseClient()
 
   return (
-    <div className='flex w-full'>
+    <div className='flex w-full h-full'>
       <div className='flex-shrink-0 w-80'>
         <SideMenu />
       </div>
@@ -30,7 +30,6 @@ export default function AdminSettingsPage() {
             {isSupabaseConnected && <AuthButton loginUrl='/admin/login' />}
           </div>
         </nav>
-        {/* TODO:bg-amber-50の背景色がh-fullになるように修正必要  */}
         <div className='flex-1 bg-amber-50 w-full'>
           <Title title='管理者情報編集　パスワード変更' />
           <div className='pl-10 pt-7'>

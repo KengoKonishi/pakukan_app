@@ -1,12 +1,12 @@
-import SettingForm from '@/app/admin/settings/basic_info/components/settingForm'
 import AuthButton from '@/components/AuthButton'
 import DeployButton from '@/components/DeployButton'
 import SideMenu from '@/components/admin/SideMenu'
 import Title from '@/components/header/title'
 import { createClient } from '@/utils/supabase/server'
+import EditForm from './components/EditForm'
 
-export default function AdminSettingsPage() {
-  const canInitSupabaseClient = () => {
+export default function EditPage() {
+  function canInitSupabaseClient() {
     try {
       createClient()
       return true
@@ -31,10 +31,9 @@ export default function AdminSettingsPage() {
           </div>
         </nav>
         <div className='flex-1 bg-amber-50 w-full'>
-          <Title title='管理者情報編集　基本情報変更' />
-          <div className='pl-10 pt-7'>
-            <SettingForm />
-          </div>
+          <Title title='民泊施設情報　編集' />
+          <div className='pl-10 pt-7'></div>
+          <EditForm />
         </div>
       </div>
     </div>
