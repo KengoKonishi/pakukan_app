@@ -76,7 +76,7 @@ export const CleaningScheduleModal = ({
       >
         {/* モーダル全体 */}
         <div
-          className='flex flex-col justify-center items-center w-4/5 p-5 my-24 bg-white border z-20'
+          className='flex flex-col justify-start items-center h-5/6 w-4/5 p-5 my-24 bg-white border z-20 overflow-auto'
           onClick={(e) => e.stopPropagation()}
         >
           {/* モーダルヘッダー */}

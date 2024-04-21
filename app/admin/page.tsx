@@ -33,7 +33,7 @@ export default function Index() {
             {isSupabaseConnected && <AuthButton loginUrl='/admin/login' />}
           </div>
         </nav>
-        <div className='flex-1 bg-amber-50 w-full'>
+        <div className='flex-1 bg-amber-50 w-full h-full'>
           <Title title='カレンダーダッシュボード画面' />
           <div className='pl-10 pt-7'>
             <AdminCalendar />
