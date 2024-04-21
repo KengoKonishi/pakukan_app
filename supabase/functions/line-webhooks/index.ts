@@ -55,7 +55,11 @@ const processEvent = async (event) => {
     'Content-Type': 'application/json',
   }
 
-  // 公式アカウントが追加されたとき もしくは プロフィール登録と入力されたとき
+  /*
+    清掃員プロフィール登録機能
+    公式アカウントが追加されたとき もしくは プロフィール登録と入力されたとき
+    (NOTE: 正確にはブロック解除されたときもfollowイベントが発火する)
+ */
   if (
     event.type === 'follow' ||
     (event.type === 'message' &&
@@ -122,6 +126,18 @@ const processEvent = async (event) => {
     }
   }
 
-  // TODO: シフト確認 機能
-  // TODO: 清掃報告 機能
+  /*
+    募集中シフト取得機能
+    TODO:
+ */
+
+  /*
+    シフト確認機能
+    TODO:
+ */
+
+  /*
+    清掃報告機能
+    TODO:
+ */
 }
