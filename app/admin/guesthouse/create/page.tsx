@@ -1,4 +1,4 @@
-import SettingForm from '@/app/admin/settings/basic_info/components/settingForm'
+import CreateForm from '@/app/admin/guesthouse/create/components/createForm'
 import AuthButton from '@/components/AuthButton'
 import DeployButton from '@/components/DeployButton'
 import SideMenu from '@/components/admin/SideMenu'
@@ -31,9 +31,9 @@ export default function AdminSettingsPage() {
           </div>
         </nav>
         <div className='flex-1 bg-amber-50 w-full'>
-          <Title title='管理者情報編集　基本情報変更' />
+          <Title title='民泊施設情報　登録' />
           <div className='pl-10 pt-7'>
-            <SettingForm />
+            <CreateForm></CreateForm>
           </div>
         </div>
       </div>

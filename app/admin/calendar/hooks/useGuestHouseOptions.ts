@@ -14,13 +14,6 @@ export const useGuestHouseOptions = () => {
     const fetchGuestHouses = async () => {
       const supabase = createClient()
 
-      const { error: getUserError } = await supabase.auth.getUser()
-
-      if (getUserError) {
-        console.log(getUserError)
-        return
-      }
-
       const { data, error } = await supabase
         .from('guest_houses')
         .select('id, name')
