@@ -9,51 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      admins: {
-        Row: {
-          created_at: string | null
-          email: string
-          id: number
-          name: string
-          owner_group_id: number
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          email: string
-          id?: number
-          name: string
-          owner_group_id: number
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          email?: string
-          id?: number
-          name?: string
-          owner_group_id?: number
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'public_admins_owner_group_id_fkey'
-            columns: ['owner_group_id']
-            isOneToOne: false
-            referencedRelation: 'owner_groups'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'public_admins_user_id_fkey'
-            columns: ['user_id']
-            isOneToOne: false
-            referencedRelation: 'users'
-            referencedColumns: ['id']
-          },
-        ]
-      }
       cleaners: {
         Row: {
           created_at: string | null
@@ -64,7 +19,6 @@ export type Database = {
           name: string
           tel: string | null
           updated_at: string | null
-          user_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -75,7 +29,6 @@ export type Database = {
           name: string
           tel?: string | null
           updated_at?: string | null
-          user_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -86,17 +39,8 @@ export type Database = {
           name?: string
           tel?: string | null
           updated_at?: string | null
-          user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: 'public_cleaners_user_id_fkey'
-            columns: ['user_id']
-            isOneToOne: false
-            referencedRelation: 'users'
-            referencedColumns: ['id']
-          },
-        ]
+        Relationships: []
       }
       cleaning_schedules: {
         Row: {
@@ -187,27 +131,6 @@ export type Database = {
           created_at?: string | null
           id?: number
           is_deleted?: number | null
-          name?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      owner_groups: {
-        Row: {
-          created_at: string | null
-          id: number
-          name: string
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: number
-          name: string
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: number
           name?: string
           updated_at?: string | null
         }
