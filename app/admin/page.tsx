@@ -1,6 +1,8 @@
 import AdminCalendar from '@/app/admin/calendar'
 import AuthButton from '@/components/AuthButton'
 import DeployButton from '@/components/DeployButton'
+import SideMenu from '@/components/admin/SideMenu'
+import Title from '@/components/header/title'
 import { createClient } from '@/utils/supabase/server'
 
 export default function Index() {
@@ -18,34 +20,26 @@ export default function Index() {
   const isSupabaseConnected = canInitSupabaseClient()
 
   return (
-    <div className='flex-1 w-full flex flex-col gap-20 items-center'>
-      <nav className='w-full flex justify-center border-b border-b-foreground/10 h-16'>
-        <div className='w-full max-w-4xl flex justify-between items-center p-3 text-sm'>
-          <DeployButton />
-          {isSupabaseConnected && <AuthButton loginUrl='/admin/login' />}
-        </div>
-      </nav>
-
-      <div className='flex-1 flex flex-col justify-center items-center w-full gap-20 px-3'>
-        <main className='flex-1 flex flex-col justify-center items-center w-full gap-6'>
-          <h2 className='font-bold text-4xl mb-4'>管理者 カレンダーダッシュボード画面</h2>
-          <AdminCalendar />
-        </main>
+    <div className='flex w-full h-full'>
+      <div className='flex-shrink-0 w-80'>
+        <SideMenu />
       </div>
 
-      <footer className='w-full border-t border-t-foreground/10 p-8 flex justify-center text-center text-xs'>
-        <p>
-          Powered by{' '}
-          <a
-            href='https://supabase.com/?utm_source=create-next-app&utm_medium=template&utm_term=nextjs'
-            target='_blank'
-            className='font-bold hover:underline'
-            rel='noreferrer'
-          >
-            Supabase
-          </a>
-        </p>
-      </footer>
+      {/* DeployButton と Main Content */}
+      <div className='flex flex-col flex-1'>
+        <nav className='w-full flex justify-center border-b border-b-foreground/10 h-16'>
+          <div className='w-full max-w-4xl flex justify-between items-center p-3 text-sm'>
+            <DeployButton />
+            {isSupabaseConnected && <AuthButton loginUrl='/admin/login' />}
+          </div>
+        </nav>
+        <div className='flex-1 bg-amber-50 w-full'>
+          <Title title='カレンダーダッシュボード画面' />
+          <div className='pl-10 pt-7'>
+            <AdminCalendar />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
