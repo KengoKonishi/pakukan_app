@@ -70,13 +70,10 @@ export const updateSession = async (request: NextRequest) => {
     const origin = requestUrl.origin
 
     // 管理者権限が必要なページへのアクセス時
-    if (
-      requestUrl.pathname.startsWith('/admin') &&
-      requestUrl.pathname !== '/admin/login'
-    ) {
+    if (requestUrl.pathname !== '/login') {
       // 未ログイン時は管理者ログイン画面にリダイレクト
       if (!user) {
-        return NextResponse.redirect(`${origin}/admin/login`)
+        return NextResponse.redirect(`${origin}/login`)
       }
     }
 

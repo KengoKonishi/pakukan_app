@@ -17,10 +17,10 @@ export default function Login({ searchParams }: { searchParams: { message: strin
     })
 
     if (error) {
-      return redirect('/admin/login?message=Could not authenticate user')
+      return redirect('/login?message=Could not authenticate user')
     }
 
-    return redirect('/admin')
+    return redirect('/')
   }
 
   // TODO: 清掃員作成機能の実装時に参考にする
@@ -47,10 +47,10 @@ export default function Login({ searchParams }: { searchParams: { message: strin
 
     if (error) {
       console.log(error)
-      return redirect('/admin/login?message=Could not authenticate user')
+      return redirect('/login?message=Could not authenticate user')
     }
 
-    return redirect('/admin/login?message=Check email to continue sign in process')
+    return redirect('/login?message=Check email to continue sign in process')
   }
 
   return (

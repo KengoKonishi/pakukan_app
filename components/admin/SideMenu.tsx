@@ -20,9 +20,9 @@ const SideMenu = () => {
         </div>
         <div className={`menu-items py-2 ${isOpen ? 'open' : ''}`}>
           <MenuItemCalender />
-          <MenuItem link='/admin/cleaning_status_list/'>清掃状況管理</MenuItem>
-          <MenuItem link='/admin/guesthouse/list/'>民泊施設情報</MenuItem>
-          <MenuItem link='/admin/cleaner/list/'>清掃員情報</MenuItem>
+          <MenuItem link='/cleaning_status_list/'>清掃状況管理</MenuItem>
+          <MenuItem link='/guesthouse/list/'>民泊施設情報</MenuItem>
+          <MenuItem link='/cleaner/list/'>清掃員情報</MenuItem>
           <MenuItemAdminSettings />
           <MenuItem link=''>ログアウト</MenuItem>
         </div>
@@ -49,14 +49,14 @@ const MenuItemCalender = () => {
   return (
     <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <div className='text-start bg-orange-200 text-gray-950 pl-4 my-2 py-2 hover:bg-orange-100 hover:text-gray-600'>
-        <Link href='/admin' className=''>
+        <Link href='/' className=''>
           <div onClick={handleExpand}>{isExpanded ? '▼' : '▶️'} カレンダー</div>
         </Link>
       </div>
       {isExpanded && (
         <div className='text-sm ml-2'>
-          <MenuItem link='admin/stay_schedule/create'>宿泊スケジュール作成</MenuItem>
-          <MenuItem link='admin/staff_schedule/create'>清掃員スケジュール作成</MenuItem>
+          <MenuItem link='/stay_schedule/create'>宿泊スケジュール作成</MenuItem>
+          <MenuItem link='/staff_schedule/create'>清掃員スケジュール作成</MenuItem>
         </div>
       )}
     </div>
@@ -87,8 +87,8 @@ const MenuItemAdminSettings = () => {
       </div>
       {isExpanded && (
         <div className='text-sm ml-2'>
-          <MenuItem link='/admin/settings/basic_info/'>基本情報変更</MenuItem>
-          <MenuItem link='/admin/settings/password/'>パスワード変更</MenuItem>
+          <MenuItem link='/settings/basic_info/'>基本情報変更</MenuItem>
+          <MenuItem link='/settings/password/'>パスワード変更</MenuItem>
         </div>
       )}
     </div>
