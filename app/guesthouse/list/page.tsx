@@ -1,14 +1,13 @@
-import AdminCalendar from '@/app/calendar'
+import GuesthouseTable from '@/app/guesthouse/list/components/GuesthouseTable'
 import AuthButton from '@/components/AuthButton'
 import DeployButton from '@/components/DeployButton'
 import SideMenu from '@/components/admin/SideMenu'
 import Title from '@/components/header/title'
 import { createClient } from '@/utils/supabase/server'
+import CreateButton from './components/CreateButton'
 
-export default function Index() {
+export default function AdminSettingsPage() {
   const canInitSupabaseClient = () => {
-    // This function is just for the interactive tutorial.
-    // Feel free to remove it once you have Supabase connected.
     try {
       createClient()
       return true
@@ -16,7 +15,6 @@ export default function Index() {
       return false
     }
   }
-
   const isSupabaseConnected = canInitSupabaseClient()
 
   return (
@@ -33,10 +31,15 @@ export default function Index() {
             {isSupabaseConnected && <AuthButton loginUrl='/login' />}
           </div>
         </nav>
-        <div className='flex-1 bg-amber-50 w-full h-full'>
-          <Title title='カレンダーダッシュボード画面' />
-          <div className='pl-10 pt-7'>
-            <AdminCalendar />
+        <div className='flex-1 bg-amber-50 w-full'>
+          <Title title='民泊施設情報' />
+          <div className='flex justify-end mr-12'>
+            <div>
+              <CreateButton label='新規作成'></CreateButton>
+            </div>
+          </div>
+          <div className='pl-10 pt-7 mr-11'>
+            <GuesthouseTable></GuesthouseTable>
           </div>
         </div>
       </div>

@@ -66,39 +66,14 @@ export const updateSession = async (request: NextRequest) => {
     const userResponse = await supabase.auth.getUser()
     const user = userResponse.data.user
 
-    // FIXME: 権限周りの制御を別ロジックに切り出したい
     const requestUrl = new URL(request.url)
     const origin = requestUrl.origin
 
     // 管理者権限が必要なページへのアクセス時
-    if (
-      requestUrl.pathname.startsWith('/admin') &&
-      requestUrl.pathname !== '/admin/login'
-    ) {
+    if (requestUrl.pathname !== '/login') {
       // 未ログイン時は管理者ログイン画面にリダイレクト
       if (!user) {
-        return NextResponse.redirect(`${origin}/admin/login`)
-      }
-      // 管理者権限でない場合はトップページにリダイレクト
-      const metadata = user.user_metadata
-      if (!metadata || metadata.role !== 'admin') {
-        return NextResponse.redirect(`${origin}/${metadata.role}`)
-      }
-    }
-
-    // 清掃員権限が必要なページへのアクセス時
-    if (
-      requestUrl.pathname.startsWith('/staff') &&
-      requestUrl.pathname !== '/staff/login'
-    ) {
-      // 未ログイン時は清掃員ログイン画面にリダイレクト
-      if (!user) {
-        return NextResponse.redirect(`${origin}/staff/login`)
-      }
-      // 清掃員権限でない場合はトップページにリダイレクト
-      const metadata = user.user_metadata
-      if (!metadata || metadata.role !== 'staff') {
-        return NextResponse.redirect(`${origin}/${metadata.role}`)
+        return NextResponse.redirect(`${origin}/login`)
       }
     }
 

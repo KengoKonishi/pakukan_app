@@ -1,14 +1,12 @@
-import AdminCalendar from '@/app/calendar'
 import AuthButton from '@/components/AuthButton'
 import DeployButton from '@/components/DeployButton'
 import SideMenu from '@/components/admin/SideMenu'
 import Title from '@/components/header/title'
 import { createClient } from '@/utils/supabase/server'
+import EditForm from './components/EditForm'
 
-export default function Index() {
-  const canInitSupabaseClient = () => {
-    // This function is just for the interactive tutorial.
-    // Feel free to remove it once you have Supabase connected.
+export default function EditPage() {
+  function canInitSupabaseClient() {
     try {
       createClient()
       return true
@@ -16,7 +14,6 @@ export default function Index() {
       return false
     }
   }
-
   const isSupabaseConnected = canInitSupabaseClient()
 
   return (
@@ -33,11 +30,10 @@ export default function Index() {
             {isSupabaseConnected && <AuthButton loginUrl='/login' />}
           </div>
         </nav>
-        <div className='flex-1 bg-amber-50 w-full h-full'>
-          <Title title='カレンダーダッシュボード画面' />
-          <div className='pl-10 pt-7'>
-            <AdminCalendar />
-          </div>
+        <div className='flex-1 bg-amber-50 w-full'>
+          <Title title='清掃員情報　編集' />
+          <div className='pl-10 pt-7'></div>
+          <EditForm />
         </div>
       </div>
     </div>

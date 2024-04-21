@@ -45,10 +45,6 @@ npm run dev
 管理者
 admin@test.com
 password
-
-清掃員
-cleaner@test.com
-password
 ```
 
 # Supabaseコマンド
