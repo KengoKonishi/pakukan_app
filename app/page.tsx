@@ -1,5 +1,9 @@
+import AdminCalendar from '@/app/calendar'
+import AuthButton from '@/components/AuthButton'
+import DeployButton from '@/components/DeployButton'
+import SideMenu from '@/components/admin/SideMenu'
+import Title from '@/components/header/title'
 import { createClient } from '@/utils/supabase/server'
-import DeployButton from '../components/DeployButton'
 
 export default function Index() {
   const canInitSupabaseClient = () => {
@@ -13,37 +17,29 @@ export default function Index() {
     }
   }
 
-  // TODO: 何かで使用するかもなのでとってあるが、不要になったら削除する
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const isSupabaseConnected = canInitSupabaseClient()
 
   return (
-    <div className='flex-1 w-full flex flex-col gap-20 items-center'>
-      <nav className='w-full flex justify-center border-b border-b-foreground/10 h-16'>
-        <div className='w-full max-w-4xl flex justify-between items-center p-3 text-sm'>
-          <DeployButton />
-        </div>
-      </nav>
-
-      <div className='animate-in flex-1 flex flex-col gap-20 opacity-0 max-w-4xl px-3'>
-        <main className='flex-1 flex flex-col gap-6'>
-          <h2 className='font-bold text-4xl mb-4'>パクカン TOPページ</h2>
-        </main>
+    <div className='flex w-full h-full'>
+      <div className='flex-shrink-0 w-80'>
+        <SideMenu />
       </div>
 
-      <footer className='w-full border-t border-t-foreground/10 p-8 flex justify-center text-center text-xs'>
-        <p>
-          Powered by{' '}
-          <a
-            href='https://supabase.com/?utm_source=create-next-app&utm_medium=template&utm_term=nextjs'
-            target='_blank'
-            className='font-bold hover:underline'
-            rel='noreferrer'
-          >
-            Supabase
-          </a>
-        </p>
-      </footer>
+      {/* DeployButton と Main Content */}
+      <div className='flex flex-col flex-1'>
+        <nav className='w-full flex justify-center border-b border-b-foreground/10 h-16'>
+          <div className='w-full max-w-4xl flex justify-between items-center p-3 text-sm'>
+            <DeployButton />
+            {isSupabaseConnected && <AuthButton loginUrl='/admin/login' />}
+          </div>
+        </nav>
+        <div className='flex-1 bg-amber-50 w-full h-full'>
+          <Title title='カレンダーダッシュボード画面' />
+          <div className='pl-10 pt-7'>
+            <AdminCalendar />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

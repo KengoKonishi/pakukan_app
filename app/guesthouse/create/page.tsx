@@ -1,4 +1,4 @@
-import SettingForm from '@/app/admin/settings/password/components/settingForm'
+import CreateForm from '@/app/guesthouse/create/components/createForm'
 import AuthButton from '@/components/AuthButton'
 import DeployButton from '@/components/DeployButton'
 import SideMenu from '@/components/admin/SideMenu'
@@ -6,7 +6,7 @@ import Title from '@/components/header/title'
 import { createClient } from '@/utils/supabase/server'
 
 export default function AdminSettingsPage() {
-  function canInitSupabaseClient() {
+  const canInitSupabaseClient = () => {
     try {
       createClient()
       return true
@@ -31,9 +31,9 @@ export default function AdminSettingsPage() {
           </div>
         </nav>
         <div className='flex-1 bg-amber-50 w-full'>
-          <Title title='管理者情報編集　パスワード変更' />
+          <Title title='民泊施設情報　登録' />
           <div className='pl-10 pt-7'>
-            <SettingForm />
+            <CreateForm></CreateForm>
           </div>
         </div>
       </div>
