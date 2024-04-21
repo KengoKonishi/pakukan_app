@@ -28,12 +28,22 @@ export default function SettingForm() {
     }
 
     try {
+      const { data: sameNameData } = await supabase
+        .from('guest_houses')
+        .select()
+        .eq('name', name)
+        .eq('is_deleted', 0)
+
+      if (sameNameData && sameNameData.length !== 0) {
+        setValidationError('すでに登録されている宿泊施設名です。')
+        return
+      }
+
       // 更新するデータを準備
       const guesthouseData = {
         name: name,
       }
 
-      // auth.users テーブルの更新
       const createGuesthouse = await supabase.from('guest_houses').insert(guesthouseData)
 
       if (createGuesthouse.error) {
