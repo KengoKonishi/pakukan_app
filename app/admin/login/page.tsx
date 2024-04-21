@@ -38,7 +38,6 @@ export default function Login({ searchParams }: { searchParams: { message: strin
       password,
       options: {
         data: {
-          owner_group_id: 1,
           role: 'admin',
           name: email + 'さん',
         },
