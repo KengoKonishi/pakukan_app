@@ -7,6 +7,46 @@ const LINE_PUSH_MESSAGE_URL = 'https://api.line.me/v2/bot/message/push'
 const CLEANER_REGISTRATION_FORM_BASE_URL =
   'https://docs.google.com/forms/d/e/1FAIpQLSfSBlpF_8oKHYkn5VNQsIb4EgYfA0ivi3f4I8LS9sjdJVa5rA/viewform?usp=pp_url&entry.455572547='
 
+type CarouselContainerContent = {
+  type: 'bubble'
+  body: {
+    type: string
+    layout: string
+    contents: [
+      {
+        type: 'text'
+        text: string
+        wrap: boolean
+      },
+    ]
+  }
+  footer: {
+    type: string
+    layout: string
+    contents: [
+      {
+        type: 'button'
+        style: string
+        action: {
+          type: 'postback'
+          label: string
+          data: string
+          displayText?: string
+        }
+      },
+    ]
+  }
+}
+
+type FlexMessage = {
+  type: string
+  altText: string
+  contents: {
+    type: 'carousel'
+    contents: CarouselContainerContent[]
+  }
+}
+
 // NOTE: LINEのWebhook URLとして登録している関数
 Deno.serve(async (request) => {
   // NOTE: 署名の検証にbodyのテキストが必要
@@ -59,7 +99,7 @@ const processEvent = async (event) => {
     清掃員プロフィール登録機能
     公式アカウントが追加されたとき もしくは プロフィール登録と入力されたとき
     (NOTE: 正確にはブロック解除されたときもfollowイベントが発火する)
- */
+  */
   if (
     event.type === 'follow' ||
     (event.type === 'message' &&
@@ -128,16 +168,217 @@ const processEvent = async (event) => {
 
   /*
     募集中シフト取得機能
-    TODO:
- */
+  */
+  if (
+    event.type === 'postback' &&
+    event.postback.data === 'action=getAvairableCreaningSchedules'
+  ) {
+    // NOTE: 清掃員IDが紐づけられていない清掃スケジュールを募集中のシフトとしている。一応statusが未完了という条件も指定している
+    const { data: cleaningScheduleData } = await supabase
+      .from('cleaning_schedules')
+      .select('id, start_datetime, end_datetime, guest_houses (name)')
+      .is('cleaner_id', null)
+      .eq('cleaning_status_id', 1)
+
+    // 募集中のシフトが存在しない場合
+    if (cleaningScheduleData.length === 0) {
+      const replyMessages = [
+        {
+          type: 'text',
+          text: '現在募集中のシフトはありません。',
+        },
+      ]
+
+      const dataString = JSON.stringify({
+        to: lineUserId,
+        messages: replyMessages,
+      })
+
+      try {
+        await fetch(LINE_PUSH_MESSAGE_URL, {
+          method: 'POST',
+          headers: headers,
+          body: dataString,
+        })
+      } catch (e) {
+        console.error(e)
+      }
+
+      return
+    }
+
+    // 募集中のシフトが存在する場合
+    const contents: CarouselContainerContent[] = []
+    cleaningScheduleData.forEach((schedule) => {
+      const startDatetime = new Date(schedule.start_datetime).toLocaleString()
+      const endDatetime = new Date(schedule.end_datetime).toLocaleString()
+      const scheduleInfo = `宿泊施設: ${schedule.guest_houses.name}\n\n開始日: ${startDatetime}\n\n終了日: ${endDatetime}`
+
+      contents.push({
+        type: 'bubble',
+        body: {
+          type: 'box',
+          layout: 'horizontal',
+          contents: [
+            {
+              type: 'text',
+              text: scheduleInfo,
+              wrap: true,
+            },
+          ],
+        },
+        footer: {
+          type: 'box',
+          layout: 'horizontal',
+          contents: [
+            {
+              type: 'button',
+              style: 'primary',
+              action: {
+                type: 'postback',
+                label: 'シフト申請',
+                data: `action=createCreanSchedule&id=${schedule.id}`,
+                // displayText: `以下のシフトを申請しました。\n\n${scheduleInfo}`,
+              },
+            },
+          ],
+        },
+      })
+    })
+
+    const messages: FlexMessage[] = [
+      {
+        type: 'flex',
+        altText: 'This is a Flex Message',
+        contents: {
+          type: 'carousel',
+          contents: contents,
+        },
+      },
+    ]
+
+    try {
+      await fetch(LINE_PUSH_MESSAGE_URL, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({ to: lineUserId, messages }),
+      })
+    } catch (e) {
+      console.error(e)
+    }
+
+    return
+  }
+
+  /*
+    シフト登録機能
+    NOTE: action=createCreanSchedule&id=${id}
+  */
+  if (
+    event.type === 'postback' &&
+    event.postback.data.startsWith('action=createCreanSchedule')
+  ) {
+    // TODO
+    return
+
+    const postbackData = new URLSearchParams(event.postback.data)
+    const cleaningScheduleId = postbackData.get('id')
+
+    const { data: cleaner, error: getCleanerError } = await supabase
+      .from('cleaners')
+      .select()
+      .limit(1)
+      .single()
+      .eq('line_user_id', lineUserId)
+
+    if (getCleanerError) {
+      console.log(getCleanerError)
+      // TODO: エラー処理
+      return
+    }
+
+    const { count: updateCount, error } = await supabase
+      .from('cleaning_schedules')
+      .update({ cleaner_id: cleaner.id }, { count: 'exact' })
+      .eq('id', cleaningScheduleId)
+      // NOTE: シフトの重複登録を避けるために、更新条件として清掃員IDがNULLであることも指定しておく
+      .is('cleaner_id', null)
+
+    if (error) {
+      console.error(error)
+      // TODO: エラー処理
+      return
+    }
+
+    // シフト登録できなかった場合
+    if (updateCount === 0) {
+      const replyMessages = [
+        {
+          type: 'text',
+          text: '申し訳ありません。このシフトは埋まってしまいました。',
+        },
+      ]
+
+      const dataString = JSON.stringify({
+        to: lineUserId,
+        messages: replyMessages,
+      })
+
+      try {
+        await fetch(LINE_PUSH_MESSAGE_URL, {
+          method: 'POST',
+          headers: headers,
+          body: dataString,
+        })
+      } catch (e) {
+        console.error(e)
+      }
+      return
+    }
+
+    // シフト登録できた場合
+    const { data: cleaningSchedule } = await supabase
+      .from('cleaning_schedules')
+      .select('id, start_datetime, end_datetime, guest_houses (name)')
+      .limit(1)
+      .single()
+      .eq('id', cleaningScheduleId)
+
+    const startDatetime = new Date(cleaningSchedule.start_datetime).toLocaleString()
+    const endDatetime = new Date(cleaningSchedule.end_datetime).toLocaleString()
+    const scheduleInfo = `宿泊施設: ${cleaningSchedule.guest_houses.name}\n\n開始日: ${startDatetime}\n\n終了日: ${endDatetime}`
+
+    const replyMessages = [
+      {
+        type: 'text',
+        text: `以下のシフトを登録しました。\n\n${scheduleInfo}`,
+      },
+    ]
+
+    const dataString = JSON.stringify({
+      to: lineUserId,
+      messages: replyMessages,
+    })
+
+    try {
+      await fetch(LINE_PUSH_MESSAGE_URL, {
+        method: 'POST',
+        headers: headers,
+        body: dataString,
+      })
+    } catch (e) {
+      console.error(e)
+    }
+    return
+  }
 
   /*
     シフト確認機能
     TODO:
- */
+  */
 
   /*
     清掃報告機能
     TODO:
- */
+  */
 }
