@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 
@@ -47,11 +48,6 @@ export const StayScheduleModal = ({
     void getStaySchedule(stayScheduleID)
   }, [stayScheduleID])
 
-  const onClickEditButton = () => {
-    // TODO: 宿泊スケジュール編集画面に遷移させる
-    console.log('clicked')
-  }
-
   return (
     staySchedule && (
       <div
@@ -80,12 +76,9 @@ export const StayScheduleModal = ({
               <h3 className='text-2xl'>宿泊スケジュール</h3>
             </div>
             <div className='flex justify-end'>
-              <button
-                className='py-2 px-4 rounded-md no-underline'
-                onClick={onClickEditButton}
-              >
-                編集
-              </button>
+              <Link href={`/admin/stay_schedule/edit/${staySchedule.id}`}>
+                <button className='py-2 px-4 rounded-md no-underline'>編集</button>
+              </Link>
             </div>
             <div className='flex gap-20 p-5'>
               <div>
