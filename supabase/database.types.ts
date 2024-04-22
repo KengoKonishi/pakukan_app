@@ -90,7 +90,7 @@ export type Database = {
         }
         Insert: {
           cleaner_id?: number | null
-          cleaning_status_id: number
+          cleaning_status_id?: number
           created_at?: string | null
           end_datetime: string
           guest_house_id: number
