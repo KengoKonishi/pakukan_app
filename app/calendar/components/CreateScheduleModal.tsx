@@ -20,11 +20,11 @@ export const CreateScheduleModal = ({
     let destinationUrl = ''
     if (selected === 'stay') {
       // 宿泊スケジュール作成画面へのリンク
-      destinationUrl = `/admin/stay_schedule/create?checkInDatetime=${startDate}&checkOutDatetime=${endDate}`
+      destinationUrl = `/stay_schedule/create?checkInDatetime=${startDate}&checkOutDatetime=${endDate}`
     }
     if (selected === 'cleaning') {
       // 清掃員スケジュール作成画面へのリンク
-      destinationUrl = `/admin/staff_schedule/create?startDate=${startDate}&endDate=${endDate}`
+      destinationUrl = `/staff_schedule/create?startDate=${startDate}&endDate=${endDate}`
     }
 
     return (

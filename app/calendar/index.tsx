@@ -25,6 +25,8 @@ const AdminCalendar = () => {
     endDate: '',
     scheduleId: 0,
   })
+  const [scheduleDeleted, setScheduleDeleted] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
 
   useEffect(() => {
     // チェックがついた民泊施設に紐づくスケジュールを取得
@@ -96,7 +98,18 @@ const AdminCalendar = () => {
       endDate: '',
       scheduleId: 0,
     }))
-  }, [])
+
+    // スケジュールが削除された後に、再度stay_scheduleを取得する処理をここに実装
+    const checkedGuestHouseIds = guestHouseOptions
+      .filter((option) => option.checked)
+      .map((option) => option.id.toString())
+
+    void fetchSchedules(checkedGuestHouseIds)
+    setSuccessMessage('削除が成功しました')
+
+    // スケジュールが削除されたことをリセット
+    setScheduleDeleted(false)
+  }, [guestHouseOptions])
 
   // 清掃スケジュール削除時の処理
   const handleDeleteCleaningSchedule = useCallback(() => {
@@ -108,8 +121,22 @@ const AdminCalendar = () => {
     // TODO: トーストを表示する
   }, [guestHouseOptions])
 
+  // 削除後の処理
+  const handleScheduleDeleted = () => {
+    // スケジュールが削除されたことを設定
+    setScheduleDeleted(true)
+    if (scheduleDeleted) {
+      return
+    }
+  }
+
   return (
     <div className='w-full'>
+      {successMessage && (
+        <div className='text-blue-500 px-4 py-2 bg-yellow-200 rounded-md font-bold w-8/12 mb-4'>
+          {successMessage}
+        </div>
+      )}
       {modalState.name === MODAL_NAMES.CREATE_SCHEDULE && (
         <CreateScheduleModal
           endDate={modalState.endDate}
@@ -121,6 +148,7 @@ const AdminCalendar = () => {
         <StayScheduleModal
           stayScheduleID={modalState.scheduleId}
           onClose={handleModalClose}
+          onScheduleDeleted={handleScheduleDeleted}
         />
       )}
       {modalState.name === MODAL_NAMES.CLEANING_SCHEDULE &&

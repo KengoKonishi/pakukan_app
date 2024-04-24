@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
+import DeleteButton from './DeleteButton'
 
 type StaySchedule = {
   id: number
@@ -21,15 +22,17 @@ type StaySchedule = {
 export const StayScheduleModal = ({
   stayScheduleID,
   onClose,
+  onScheduleDeleted,
 }: {
   stayScheduleID: number
   onClose: () => void
+  onScheduleDeleted: () => void
 }) => {
   const [staySchedule, setStaySchedule] = useState<StaySchedule | null>(null)
+  const supabase = createClient()
 
   useEffect(() => {
     const getStaySchedule = async (id: number) => {
-      const supabase = createClient()
       const { data, error } = await supabase
         .from('stay_schedules')
         .select(
@@ -46,7 +49,29 @@ export const StayScheduleModal = ({
     }
 
     void getStaySchedule(stayScheduleID)
-  }, [stayScheduleID])
+  }, [stayScheduleID, supabase])
+
+  // レコード削除
+  const handleDelete = async (id: number): Promise<void> => {
+    try {
+      const { error } = await supabase.from('stay_schedules').delete().match({ id })
+      if (error) {
+        throw error
+      }
+
+      // すべての更新処理が成功した場合の処理
+      console.log('フォームの削除処理が成功しました')
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      // 削除が成功したら親コンポーネントに通知
+      onScheduleDeleted()
+
+      // モーダルを閉じる
+      onClose()
+    } catch (error) {
+      console.error('Error deleting stay schedule:', error)
+    }
+  }
 
   return (
     staySchedule && (
@@ -76,9 +101,10 @@ export const StayScheduleModal = ({
               <h3 className='text-2xl'>宿泊スケジュール</h3>
             </div>
             <div className='flex justify-end'>
-              <Link href={`/admin/stay_schedule/edit/${staySchedule.id}`}>
+              <Link href={`/stay_schedule/edit/${staySchedule.id}`}>
                 <button className='py-2 px-4 rounded-md no-underline'>編集</button>
               </Link>
+              <DeleteButton onConfirmDelete={() => handleDelete(staySchedule.id)} />
             </div>
             <div className='flex gap-20 p-5'>
               <div>

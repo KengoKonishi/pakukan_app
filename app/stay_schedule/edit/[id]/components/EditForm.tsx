@@ -1,78 +1,101 @@
 'use client'
+import { useParams } from 'next/navigation'
 import React, { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import SubmitButton from '../../components/SubmitButton'
+import SubmitButton from '../../../components/SubmitButton'
 
 export default function SettingForm() {
-  const [checkInDatetime, setCheckInDatetime] = useState('')
-  const [checkOutDatetime, setCheckOutDatetime] = useState('')
+  const { id } = useParams<{ id: string }>()
+  const staySchedueId = parseInt(id)
+  const [staySchedule, setStaySchedule] = useState<
+    {
+      id: number
+      guest_house_id: number | null
+      start_datetime: string
+      end_datetime: string
+      guest_name: string
+      numbers_of_guests: string
+      amenities_info: string | null
+      bag_recieve_info: string | null
+      others: string | null
+    }[]
+  >([])
   const [guesthouses, setGuesthouses] = useState<{ ids: number[]; names: string[] }>({
     ids: [],
     names: [],
   })
   const [guesthouseId, setGuesthouseId] = useState<number>(0)
   const [guesthouseName, setGuesthouseName] = useState('')
-  const [guestName, setGuestName] = useState('')
-  const [numbersOfGuests, setNumbersOfGuests] = useState('')
-  const [amenitiesInfo, setAmenitiesInfo] = useState('')
-  const [bagRecieveInfo, setBagRecieveInfo] = useState('')
-  const [others, setOthers] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [validationError, setValidationError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const supabase = createClient()
+
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search)
-    const initialCheckInDatetimeParam = urlParams.get('checkInDatetime') || ''
-    const initialCheckOutDatetimeParam = urlParams.get('checkOutDatetime') || ''
-    const addDefaultTimeToDatetime = (datetimeString: string, time: number) => {
-      const datetime = new Date(Date.parse(datetimeString))
-      datetime.setUTCHours(time, 0, 0, 0) // time:00(11:00など) を設定
-      return datetime.toISOString().slice(0, 16) // 'yyyy-mm-ddTHH:MM'
-    }
-    // デフォルトのチェックイン日時を設定
-    const initialCheckInDatetime = initialCheckInDatetimeParam
-      ? addDefaultTimeToDatetime(initialCheckInDatetimeParam, 11)
-      : ''
-    // デフォルトのチェックイン日時を設定
-    const initialCheckOutDatetime = initialCheckOutDatetimeParam
-      ? addDefaultTimeToDatetime(initialCheckOutDatetimeParam, 15)
-      : ''
-
-    setCheckInDatetime(initialCheckInDatetime)
-    setCheckOutDatetime(initialCheckOutDatetime)
-
-    const fetchGuestHouses = async () => {
+    const fetchData = async () => {
       try {
-        const { data, error } = await supabase
+        // stayScheduleの取得
+        const { data: stayData, error: stayError } = await supabase
+          .from('stay_schedules')
+          .select(
+            `id, guest_house_id, start_datetime, end_datetime, guest_name, numbers_of_guests, amenities_info, bag_recieve_info, others`,
+          )
+          .eq('id', staySchedueId)
+
+        if (stayError) {
+          throw stayError
+        }
+
+        setStaySchedule(stayData)
+
+        // stayScheduleが存在し、かつguest_house_idがnullでない場合にfetchGuestHouseを実行する
+        if (stayData.length > 0 && stayData[0].guest_house_id !== null) {
+          // 選択された宿泊施設名の取得
+          const { data: guestHouseData, error: guestHouseError } = await supabase
+            .from('guest_houses')
+            .select(`id, name`)
+            .eq('is_deleted', 0)
+            .eq('id', stayData[0].guest_house_id)
+
+          if (guestHouseError) {
+            throw guestHouseError
+          }
+
+          setGuesthouseId(guestHouseData[0].id)
+          setGuesthouseName(guestHouseData[0].name)
+        }
+
+        // 宿泊施設一覧の取得
+        const { data: guestHousesData, error: guestHousesError } = await supabase
           .from('guest_houses')
           .select(`id, name`)
           .eq('is_deleted', 0)
-        if (error) {
-          throw error
+
+        if (guestHousesError) {
+          throw guestHousesError
         }
-        const guesthouseIds = data.map((item) => item.id)
-        const guesthouseNames = data.map((item) => item.name)
+
+        const guesthouseIds = guestHousesData.map((item) => item.id)
+        const guesthouseNames = guestHousesData.map((item) => item.name)
 
         setGuesthouses({ ids: guesthouseIds, names: guesthouseNames })
-      } catch (e: unknown) {
-        if (e instanceof Error) {
-          setError(e.message)
+      } catch (error) {
+        if (error instanceof Error) {
+          setError(error.message)
         }
       } finally {
         setLoading(false)
       }
     }
 
-    void fetchGuestHouses()
-  }, [supabase])
+    void fetchData()
+  }, [supabase, staySchedueId])
 
   const handleGuesthouseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedIndex = guesthouses.names.indexOf(e.target.value)
     if (selectedIndex !== -1) {
       const selectedId = guesthouses.ids[selectedIndex]
-      // console.log('選択されたゲストハウスのID:', selectedId)
       setGuesthouseId(selectedId)
       setGuesthouseName(e.target.value)
     }
@@ -86,7 +109,12 @@ export default function SettingForm() {
     setSuccessMessage('')
 
     // 宿泊者名,アメニティ類の情報,荷物の事前/事後預かり情報,その他のバリデーション
-    const prohibitedItems = [guestName, amenitiesInfo, bagRecieveInfo, others]
+    const prohibitedItems = [
+      staySchedule[0].guest_name,
+      staySchedule[0].amenities_info,
+      staySchedule[0].bag_recieve_info,
+      staySchedule[0].others,
+    ]
     const targetItems = [
       '宿泊者名',
       'アメニティ類の情報',
@@ -100,7 +128,7 @@ export default function SettingForm() {
       const maxStringLength = 255
 
       // 文字数のチェック
-      if (item.length > maxStringLength) {
+      if (item !== null && item.length > maxStringLength) {
         setValidationError(
           `${targetItem}は${maxStringLength}文字以内で入力してください。`,
         )
@@ -108,7 +136,7 @@ export default function SettingForm() {
       }
 
       // 禁止文字のチェック
-      if (prohibitedNamePattern.test(item)) {
+      if (item !== null && prohibitedNamePattern.test(item)) {
         setValidationError(`${targetItem}に禁止文字が使用されています。`)
         return
       }
@@ -116,7 +144,7 @@ export default function SettingForm() {
 
     // 宿泊人数のバリデーション
     const prohibitedNumbersOfGuestsPattern = /[^0-9]/
-    if (prohibitedNumbersOfGuestsPattern.test(numbersOfGuests)) {
+    if (prohibitedNumbersOfGuestsPattern.test(staySchedule[0].numbers_of_guests)) {
       setValidationError('宿泊人数に数字以外の文字が使用されています。')
       return
     }
@@ -125,18 +153,20 @@ export default function SettingForm() {
       // 更新するデータを準備
       const stayScheduleData = {
         guest_house_id: guesthouseId,
-        start_datetime: checkInDatetime,
-        end_datetime: checkOutDatetime,
-        guest_name: guestName,
-        numbers_of_guests: numbersOfGuests,
-        amenities_info: amenitiesInfo,
-        bag_recieve_info: bagRecieveInfo,
-        others: others,
+        start_datetime: staySchedule[0].start_datetime,
+        end_datetime: staySchedule[0].end_datetime,
+        guest_name: staySchedule[0].guest_name,
+        numbers_of_guests: staySchedule[0].numbers_of_guests,
+        amenities_info: staySchedule[0].amenities_info,
+        bag_recieve_info: staySchedule[0].bag_recieve_info,
+        others: staySchedule[0].others,
       }
+      console.log(stayScheduleData)
 
       const createStaySchedule = await supabase
         .from('stay_schedules')
-        .insert(stayScheduleData)
+        .update(stayScheduleData)
+        .eq('id', staySchedueId)
 
       if (createStaySchedule.error) {
         throw createStaySchedule.error
@@ -145,7 +175,7 @@ export default function SettingForm() {
       // すべての更新処理が成功した場合の処理
       console.log('フォームの更新処理が成功しました')
       setTimeout(() => {
-        setSuccessMessage('作成が成功しました')
+        setSuccessMessage('更新が成功しました')
       }, 1000)
     } catch (e: unknown) {
       // 更新処理が失敗した場合の処理
@@ -189,8 +219,12 @@ export default function SettingForm() {
             <input
               type='datetime-local'
               id='checkInDatetime'
-              value={checkInDatetime}
-              onChange={(e) => setCheckInDatetime(e.target.value)}
+              value={staySchedule[0].start_datetime ?? ''}
+              onChange={(e) => {
+                const updatedStaySchedule = [...staySchedule]
+                updatedStaySchedule[0].start_datetime = e.target.value
+                setStaySchedule(updatedStaySchedule)
+              }}
               required
               className='px-3 py-3 border rounded-md ring-2 ring-amber-500 ring-offset-0 focus:ring-4 focus:outline-none'
             />
@@ -198,8 +232,12 @@ export default function SettingForm() {
             <input
               type='datetime-local'
               id='checkOutDatetime'
-              value={checkOutDatetime}
-              onChange={(e) => setCheckOutDatetime(e.target.value)}
+              value={staySchedule[0].end_datetime ?? ''}
+              onChange={(e) => {
+                const updatedStaySchedule = [...staySchedule]
+                updatedStaySchedule[0].end_datetime = e.target.value
+                setStaySchedule(updatedStaySchedule)
+              }}
               required
               className='px-3 py-3 border rounded-md ring-2 ring-amber-500 ring-offset-0 focus:ring-4 focus:outline-none'
             />
@@ -231,8 +269,12 @@ export default function SettingForm() {
           <input
             type='text'
             id='guestName'
-            value={guestName}
-            onChange={(e) => setGuestName(e.target.value)}
+            value={staySchedule[0].guest_name ?? ''}
+            onChange={(e) => {
+              const updatedStaySchedule = [...staySchedule]
+              updatedStaySchedule[0].guest_name = e.target.value
+              setStaySchedule(updatedStaySchedule)
+            }}
             required
             className='px-3 py-3 border rounded-md ring-2 ring-amber-500 ring-offset-0 focus:ring-4 focus:outline-none'
           />
@@ -245,10 +287,15 @@ export default function SettingForm() {
             <input
               type='number'
               id='numbersOfGuests'
-              value={numbersOfGuests}
-              onChange={(e) => setNumbersOfGuests(e.target.value)}
+              value={staySchedule[0].numbers_of_guests ?? ''}
+              onChange={(e) => {
+                const updatedStaySchedule = [...staySchedule]
+                updatedStaySchedule[0].numbers_of_guests = e.target.value
+                setStaySchedule(updatedStaySchedule)
+              }}
               required
               min='1'
+              max='20'
               className='px-3 py-3 border rounded-md ring-2 ring-amber-500 ring-offset-0 focus:ring-4 focus:outline-none'
             />
             <span className='ml-4 mt-4'>人</span>
@@ -260,8 +307,12 @@ export default function SettingForm() {
           </label>
           <textarea
             id='amenitiesInfo'
-            value={amenitiesInfo}
-            onChange={(e) => setAmenitiesInfo(e.target.value)}
+            value={staySchedule[0].amenities_info ?? ''}
+            onChange={(e) => {
+              const updatedStaySchedule = [...staySchedule]
+              updatedStaySchedule[0].amenities_info = e.target.value
+              setStaySchedule(updatedStaySchedule)
+            }}
             className='px-3 py-3 border rounded-md ring-2 ring-amber-500 ring-offset-0 focus:ring-4 focus:outline-none'
           />
         </div>
@@ -271,8 +322,12 @@ export default function SettingForm() {
           </label>
           <textarea
             id='bagRecieveInfo'
-            value={bagRecieveInfo}
-            onChange={(e) => setBagRecieveInfo(e.target.value)}
+            value={staySchedule[0].bag_recieve_info ?? ''}
+            onChange={(e) => {
+              const updatedStaySchedule = [...staySchedule]
+              updatedStaySchedule[0].bag_recieve_info = e.target.value
+              setStaySchedule(updatedStaySchedule)
+            }}
             className='px-3 py-3 border rounded-md ring-2 ring-amber-500 ring-offset-0 focus:ring-4 focus:outline-none'
           />
         </div>
@@ -282,14 +337,18 @@ export default function SettingForm() {
           </label>
           <textarea
             id='others'
-            value={others}
-            onChange={(e) => setOthers(e.target.value)}
+            value={staySchedule[0].others ?? ''}
+            onChange={(e) => {
+              const updatedStaySchedule = [...staySchedule]
+              updatedStaySchedule[0].others = e.target.value
+              setStaySchedule(updatedStaySchedule)
+            }}
             className='px-3 py-3 border rounded-md ring-2 ring-amber-500 ring-offset-0 focus:ring-4 focus:outline-none'
           />
         </div>
         <div className='flex justify-center'>
           <div className='flex justify-center'>
-            <SubmitButton label='登録する' />
+            <SubmitButton label='更新する' />
           </div>
         </div>
         {error && <div className='text-red-500'>{error}</div>}
