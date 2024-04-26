@@ -313,8 +313,12 @@ const processEvent = async (event) => {
       const body = {
         action: 'createCleaningEvent',
         summary: `${updateCleaningSchedule.cleaners.name}`,
-        startDateISOString: new Date(updateCleaningSchedule.start_datetime).toISOString(), // Googleカレンダー登録用
-        endDateISOString: new Date(updateCleaningSchedule.end_datetime).toISOString(), // Googleカレンダー登録用
+        startDateISOString: new Date(
+          updateCleaningSchedule.start_datetime + '+09:00',
+        ).toISOString(), // Googleカレンダー登録用
+        endDateISOString: new Date(
+          updateCleaningSchedule.end_datetime + '+09:00',
+        ).toISOString(), // Googleカレンダー登録用
         guestHouse,
         attendeesEmail: updateCleaningSchedule.cleaners.email,
       }
