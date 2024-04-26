@@ -10,46 +10,6 @@ const CLEANER_REGISTRATION_FORM_BASE_URL =
 const GOOGLE_CALENDAR_APP_URL =
   'https://script.google.com/macros/s/AKfycbxLwMepLAnHWX9RlOa4kR1RyIVBF8u-tat6BxcPkSsK6s-jKJoXMgsPuEc5iLP28l0y/exec'
 
-type CarouselContainerContent = {
-  type: 'bubble'
-  body: {
-    type: string
-    layout: string
-    contents: [
-      {
-        type: 'text'
-        text: string
-        wrap: boolean
-      },
-    ]
-  }
-  footer: {
-    type: string
-    layout: string
-    contents: [
-      {
-        type: 'button'
-        style: string
-        action: {
-          type: 'postback'
-          label: string
-          data: string
-          displayText?: string
-        }
-      },
-    ]
-  }
-}
-
-type FlexMessage = {
-  type: string
-  altText: string
-  contents: {
-    type: 'carousel'
-    contents: CarouselContainerContent[]
-  }
-}
-
 // NOTE: LINEのWebhook URLとして登録している関数
 Deno.serve(async (request) => {
   // NOTE: 署名の検証にbodyのテキストが必要
@@ -406,4 +366,44 @@ const processEvent = async (event) => {
     清掃報告機能
     TODO:
   */
+}
+
+type CarouselContainerContent = {
+  type: 'bubble'
+  body: {
+    type: string
+    layout: string
+    contents: [
+      {
+        type: 'text'
+        text: string
+        wrap: boolean
+      },
+    ]
+  }
+  footer: {
+    type: string
+    layout: string
+    contents: [
+      {
+        type: 'button'
+        style: string
+        action: {
+          type: 'postback'
+          label: string
+          data: string
+          displayText?: string
+        }
+      },
+    ]
+  }
+}
+
+type FlexMessage = {
+  type: string
+  altText: string
+  contents: {
+    type: 'carousel'
+    contents: CarouselContainerContent[]
+  }
 }
