@@ -3,49 +3,11 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js'
 import * as crypto from 'https://deno.land/std@0.166.0/node/crypto.ts'
 
 const LINE_REPLY_MESSAGE_URL = 'https://api.line.me/v2/bot/message/reply'
-const LINE_PUSH_MESSAGE_URL = 'https://api.line.me/v2/bot/message/push'
 const CLEANER_REGISTRATION_FORM_BASE_URL =
-  'https://docs.google.com/forms/d/e/1FAIpQLSfSBlpF_8oKHYkn5VNQsIb4EgYfA0ivi3f4I8LS9sjdJVa5rA/viewform?usp=pp_url&entry.455572547='
+  'https://docs.google.com/forms/d/e/1FAIpQLSf0a2362CrlBG_V_ckjXFNE472LzvPoU8pcM77EeQpzW-5LXA/viewform?usp=pp_url&entry.503257359='
 
-type CarouselContainerContent = {
-  type: 'bubble'
-  body: {
-    type: string
-    layout: string
-    contents: [
-      {
-        type: 'text'
-        text: string
-        wrap: boolean
-      },
-    ]
-  }
-  footer: {
-    type: string
-    layout: string
-    contents: [
-      {
-        type: 'button'
-        style: string
-        action: {
-          type: 'postback'
-          label: string
-          data: string
-          displayText?: string
-        }
-      },
-    ]
-  }
-}
-
-type FlexMessage = {
-  type: string
-  altText: string
-  contents: {
-    type: 'carousel'
-    contents: CarouselContainerContent[]
-  }
-}
+const GOOGLE_CALENDAR_APP_URL =
+  'https://script.google.com/macros/s/AKfycbwU95NcRyWH2WiWgAsphp169YsF8ceqvaPKgOgByhJfITa7aZUPLAMTCOCrOBYufQh7/exec'
 
 // NOTE: LINEのWebhook URLとして登録している関数
 Deno.serve(async (request) => {
@@ -121,12 +83,12 @@ const processEvent = async (event) => {
       ]
 
       const dataString = JSON.stringify({
-        to: lineUserId,
+        replyToken: event.replyToken,
         messages: replyMessages,
       })
 
       try {
-        await fetch(LINE_PUSH_MESSAGE_URL, {
+        await fetch(LINE_REPLY_MESSAGE_URL, {
           method: 'POST',
           headers: headers,
           body: dataString,
@@ -190,12 +152,12 @@ const processEvent = async (event) => {
       ]
 
       const dataString = JSON.stringify({
-        to: lineUserId,
+        replyToken: event.replyToken,
         messages: replyMessages,
       })
 
       try {
-        await fetch(LINE_PUSH_MESSAGE_URL, {
+        await fetch(LINE_REPLY_MESSAGE_URL, {
           method: 'POST',
           headers: headers,
           body: dataString,
@@ -258,10 +220,10 @@ const processEvent = async (event) => {
     ]
 
     try {
-      await fetch(LINE_PUSH_MESSAGE_URL, {
+      await fetch(LINE_REPLY_MESSAGE_URL, {
         method: 'POST',
         headers: headers,
-        body: JSON.stringify({ to: lineUserId, messages }),
+        body: JSON.stringify({ replyToken: event.replyToken, messages }),
       })
     } catch (e) {
       console.error(e)
@@ -278,9 +240,6 @@ const processEvent = async (event) => {
     event.type === 'postback' &&
     event.postback.data.startsWith('action=createCreanSchedule')
   ) {
-    // TODO
-    return
-
     const postbackData = new URLSearchParams(event.postback.data)
     const cleaningScheduleId = postbackData.get('id')
 
@@ -297,12 +256,19 @@ const processEvent = async (event) => {
       return
     }
 
-    const { count: updateCount, error } = await supabase
+    const {
+      count: updateCount,
+      data: updateCleaningScheduleData,
+      error,
+    } = await supabase
       .from('cleaning_schedules')
       .update({ cleaner_id: cleaner.id }, { count: 'exact' })
       .eq('id', cleaningScheduleId)
       // NOTE: シフトの重複登録を避けるために、更新条件として清掃員IDがNULLであることも指定しておく
       .is('cleaner_id', null)
+      .select(
+        'id, start_datetime, end_datetime, guest_houses (name), cleaners (name, email)',
+      )
 
     if (error) {
       console.error(error)
@@ -320,12 +286,12 @@ const processEvent = async (event) => {
       ]
 
       const dataString = JSON.stringify({
-        to: lineUserId,
+        replyToken: event.replyToken,
         messages: replyMessages,
       })
 
       try {
-        await fetch(LINE_PUSH_MESSAGE_URL, {
+        await fetch(LINE_REPLY_MESSAGE_URL, {
           method: 'POST',
           headers: headers,
           body: dataString,
@@ -337,16 +303,38 @@ const processEvent = async (event) => {
     }
 
     // シフト登録できた場合
-    const { data: cleaningSchedule } = await supabase
-      .from('cleaning_schedules')
-      .select('id, start_datetime, end_datetime, guest_houses (name)')
-      .limit(1)
-      .single()
-      .eq('id', cleaningScheduleId)
+    const updateCleaningSchedule = updateCleaningScheduleData[0]
+    console.log(updateCleaningSchedule)
+    const guestHouse = updateCleaningSchedule.guest_houses.name
 
-    const startDatetime = new Date(cleaningSchedule.start_datetime).toLocaleString()
-    const endDatetime = new Date(cleaningSchedule.end_datetime).toLocaleString()
-    const scheduleInfo = `宿泊施設: ${cleaningSchedule.guest_houses.name}\n\n開始日: ${startDatetime}\n\n終了日: ${endDatetime}`
+    // Googleカレンダーに同期
+    try {
+      const body = {
+        action: 'createCleaningEvent',
+        summary: `${updateCleaningSchedule.cleaners.name}`,
+        startDateISOString: new Date(
+          updateCleaningSchedule.start_datetime + '+09:00',
+        ).toISOString(), // Googleカレンダー登録用
+        endDateISOString: new Date(
+          updateCleaningSchedule.end_datetime + '+09:00',
+        ).toISOString(), // Googleカレンダー登録用
+        guestHouse,
+        attendeesEmail: updateCleaningSchedule.cleaners.email,
+      }
+      console.log(body)
+      await fetch(GOOGLE_CALENDAR_APP_URL, {
+        method: 'POST',
+        body: JSON.stringify(body),
+      })
+    } catch (e) {
+      console.error('Googleカレンダーへの同期エラー')
+      console.error(e)
+      // NOTE: 同期に失敗したがシフト登録はできているため処理は継続する
+    }
+
+    const startDatetime = new Date(updateCleaningSchedule.start_datetime).toLocaleString() // LINE表示用
+    const endDatetime = new Date(updateCleaningSchedule.end_datetime).toLocaleString() // LINE表示用
+    const scheduleInfo = `宿泊施設: ${guestHouse}\n\n開始日: ${startDatetime}\n\n終了日: ${endDatetime}`
 
     const replyMessages = [
       {
@@ -356,12 +344,12 @@ const processEvent = async (event) => {
     ]
 
     const dataString = JSON.stringify({
-      to: lineUserId,
+      replyToken: event.replyToken,
       messages: replyMessages,
     })
 
     try {
-      await fetch(LINE_PUSH_MESSAGE_URL, {
+      await fetch(LINE_REPLY_MESSAGE_URL, {
         method: 'POST',
         headers: headers,
         body: dataString,
@@ -381,4 +369,44 @@ const processEvent = async (event) => {
     清掃報告機能
     TODO:
   */
+}
+
+type CarouselContainerContent = {
+  type: 'bubble'
+  body: {
+    type: string
+    layout: string
+    contents: [
+      {
+        type: 'text'
+        text: string
+        wrap: boolean
+      },
+    ]
+  }
+  footer: {
+    type: string
+    layout: string
+    contents: [
+      {
+        type: 'button'
+        style: string
+        action: {
+          type: 'postback'
+          label: string
+          data: string
+          displayText?: string
+        }
+      },
+    ]
+  }
+}
+
+type FlexMessage = {
+  type: string
+  altText: string
+  contents: {
+    type: 'carousel'
+    contents: CarouselContainerContent[]
+  }
 }
