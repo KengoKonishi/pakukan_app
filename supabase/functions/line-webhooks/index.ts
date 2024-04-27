@@ -4,10 +4,10 @@ import * as crypto from 'https://deno.land/std@0.166.0/node/crypto.ts'
 
 const LINE_REPLY_MESSAGE_URL = 'https://api.line.me/v2/bot/message/reply'
 const CLEANER_REGISTRATION_FORM_BASE_URL =
-  'https://docs.google.com/forms/d/e/1FAIpQLSfSBlpF_8oKHYkn5VNQsIb4EgYfA0ivi3f4I8LS9sjdJVa5rA/viewform?usp=pp_url&entry.455572547='
+  'https://docs.google.com/forms/d/e/1FAIpQLSf0a2362CrlBG_V_ckjXFNE472LzvPoU8pcM77EeQpzW-5LXA/viewform?usp=pp_url&entry.503257359='
 
 const GOOGLE_CALENDAR_APP_URL =
-  'https://script.google.com/macros/s/AKfycbxLwMepLAnHWX9RlOa4kR1RyIVBF8u-tat6BxcPkSsK6s-jKJoXMgsPuEc5iLP28l0y/exec'
+  'https://script.google.com/macros/s/AKfycbwU95NcRyWH2WiWgAsphp169YsF8ceqvaPKgOgByhJfITa7aZUPLAMTCOCrOBYufQh7/exec'
 
 // NOTE: LINEのWebhook URLとして登録している関数
 Deno.serve(async (request) => {
