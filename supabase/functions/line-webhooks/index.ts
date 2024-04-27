@@ -3,7 +3,6 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js'
 import * as crypto from 'https://deno.land/std@0.166.0/node/crypto.ts'
 
 const LINE_REPLY_MESSAGE_URL = 'https://api.line.me/v2/bot/message/reply'
-const LINE_PUSH_MESSAGE_URL = 'https://api.line.me/v2/bot/message/push'
 const CLEANER_REGISTRATION_FORM_BASE_URL =
   'https://docs.google.com/forms/d/e/1FAIpQLSfSBlpF_8oKHYkn5VNQsIb4EgYfA0ivi3f4I8LS9sjdJVa5rA/viewform?usp=pp_url&entry.455572547='
 
@@ -84,12 +83,12 @@ const processEvent = async (event) => {
       ]
 
       const dataString = JSON.stringify({
-        to: lineUserId,
+        replyToken: event.replyToken,
         messages: replyMessages,
       })
 
       try {
-        await fetch(LINE_PUSH_MESSAGE_URL, {
+        await fetch(LINE_REPLY_MESSAGE_URL, {
           method: 'POST',
           headers: headers,
           body: dataString,
@@ -153,12 +152,12 @@ const processEvent = async (event) => {
       ]
 
       const dataString = JSON.stringify({
-        to: lineUserId,
+        replyToken: event.replyToken,
         messages: replyMessages,
       })
 
       try {
-        await fetch(LINE_PUSH_MESSAGE_URL, {
+        await fetch(LINE_REPLY_MESSAGE_URL, {
           method: 'POST',
           headers: headers,
           body: dataString,
@@ -221,10 +220,10 @@ const processEvent = async (event) => {
     ]
 
     try {
-      await fetch(LINE_PUSH_MESSAGE_URL, {
+      await fetch(LINE_REPLY_MESSAGE_URL, {
         method: 'POST',
         headers: headers,
-        body: JSON.stringify({ to: lineUserId, messages }),
+        body: JSON.stringify({ replyToken: event.replyToken, messages }),
       })
     } catch (e) {
       console.error(e)
@@ -287,12 +286,12 @@ const processEvent = async (event) => {
       ]
 
       const dataString = JSON.stringify({
-        to: lineUserId,
+        replyToken: event.replyToken,
         messages: replyMessages,
       })
 
       try {
-        await fetch(LINE_PUSH_MESSAGE_URL, {
+        await fetch(LINE_REPLY_MESSAGE_URL, {
           method: 'POST',
           headers: headers,
           body: dataString,
@@ -345,12 +344,12 @@ const processEvent = async (event) => {
     ]
 
     const dataString = JSON.stringify({
-      to: lineUserId,
+      replyToken: event.replyToken,
       messages: replyMessages,
     })
 
     try {
-      await fetch(LINE_PUSH_MESSAGE_URL, {
+      await fetch(LINE_REPLY_MESSAGE_URL, {
         method: 'POST',
         headers: headers,
         body: dataString,
