@@ -362,8 +362,115 @@ const processEvent = async (event) => {
 
   /*
     シフト確認機能
-    TODO:
   */
+  if (
+    event.type === 'postback' &&
+    event.postback.data.startsWith('action=getOwnCreaningSchedules')
+  ) {
+    const { data: cleaner, error: getCleanerError } = await supabase
+      .from('cleaners')
+      .select()
+      .limit(1)
+      .single()
+      .eq('line_user_id', lineUserId)
+
+    if (getCleanerError) {
+      console.error(getCleanerError)
+      // TODO: エラー処理
+      return
+    }
+
+    // 1日前の時刻を計算（UTC+9）
+    const now = new Date()
+    const japanTimeOffset = 9 * 60 // 日本のタイムゾーンオフセット（分単位）
+    const oneDayAgoTime = new Date(
+      now.getTime() + japanTimeOffset * 60000 - 24 * 60 * 60 * 1000,
+    )
+    const oneDayAgoTimeStr = oneDayAgoTime.toISOString()
+    const { data: cleaningScheduleData, error: getCleaningScheduleError } = await supabase
+      .from('cleaning_schedules')
+      .select('id, start_datetime, end_datetime, guest_houses (name)')
+      .eq('cleaner_id', cleaner.id)
+      .gte('start_datetime', oneDayAgoTimeStr)
+
+    if (getCleaningScheduleError) {
+      console.error(getCleaningScheduleError)
+      // TODO: エラー処理
+      return
+    }
+
+    // シフトがない場合
+    if (cleaningScheduleData.length === 0) {
+      const replyMessages = [
+        {
+          type: 'text',
+          text: '現在、シフトはありません。',
+        },
+      ]
+
+      const dataString = JSON.stringify({
+        replyToken: event.replyToken,
+        messages: replyMessages,
+      })
+
+      try {
+        await fetch(LINE_REPLY_MESSAGE_URL, {
+          method: 'POST',
+          headers: headers,
+          body: dataString,
+        })
+      } catch (e) {
+        console.error(e)
+      }
+      return
+    }
+
+    // シフトがある場合
+    const contents: CarouselContainerContent[] = []
+    cleaningScheduleData.forEach((schedule) => {
+      const startDatetime = new Date(schedule.start_datetime).toLocaleString()
+      const endDatetime = new Date(schedule.end_datetime).toLocaleString()
+      const scheduleInfo = `宿泊施設: ${schedule.guest_houses.name}\n\n開始日: ${startDatetime}\n\n終了日: ${endDatetime}`
+
+      contents.push({
+        type: 'bubble',
+        body: {
+          type: 'box',
+          layout: 'horizontal',
+          contents: [
+            {
+              type: 'text',
+              text: scheduleInfo,
+              wrap: true,
+            },
+          ],
+        },
+      })
+    })
+
+    const messages: FlexMessage[] = [
+      {
+        type: 'flex',
+        altText: 'This is a Flex Message',
+        contents: {
+          type: 'carousel',
+          contents: contents,
+        },
+      },
+    ]
+
+    try {
+      await fetch(LINE_REPLY_MESSAGE_URL, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({ replyToken: event.replyToken, messages }),
+      })
+    } catch (e) {
+      console.error(e)
+    }
+
+    return
+  }
 
   /*
     清掃報告機能
@@ -384,7 +491,7 @@ type CarouselContainerContent = {
       },
     ]
   }
-  footer: {
+  footer?: {
     type: string
     layout: string
     contents: [
