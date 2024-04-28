@@ -135,19 +135,26 @@ const processEvent = async (event) => {
     event.type === 'postback' &&
     event.postback.data === 'action=getAvairableCreaningSchedules'
   ) {
-    // NOTE: 清掃員IDが紐づけられていない清掃スケジュールを募集中のシフトとしている。一応statusが未完了という条件も指定している
+    const now = new Date()
+    const japanTimeOffset = 9 * 60 * 60 * 1000 // 日本のタイムゾーンオフセット（9時間をミリ秒に変換）
+    const currentDateTime = new Date(now.getTime() + japanTimeOffset) // 日本時間で現在時刻
+    const currentDateTimeStr = currentDateTime.toISOString()
+    console.log(currentDateTimeStr)
+
+    // NOTE: 清掃員IDが紐づけられていない清掃スケジュールを募集中のシフトとしている。
     const { data: cleaningScheduleData } = await supabase
       .from('cleaning_schedules')
       .select('id, start_datetime, end_datetime, guest_houses (name)')
       .is('cleaner_id', null)
-      .eq('cleaning_status_id', 1)
+      .gte('start_datetime', currentDateTimeStr) // 開始日が現在以降
+      .eq('cleaning_status_id', 1) // 一応statusが未完了という条件も指定
 
     // 募集中のシフトが存在しない場合
     if (cleaningScheduleData.length === 0) {
       const replyMessages = [
         {
           type: 'text',
-          text: '現在募集中のシフトはありません。',
+          text: '現在、募集中のシフトはありません。',
         },
       ]
 
@@ -380,12 +387,9 @@ const processEvent = async (event) => {
       return
     }
 
-    // 1日前の時刻を計算（UTC+9）
     const now = new Date()
-    const japanTimeOffset = 9 * 60 // 日本のタイムゾーンオフセット（分単位）
-    const oneDayAgoTime = new Date(
-      now.getTime() + japanTimeOffset * 60000 - 24 * 60 * 60 * 1000,
-    )
+    const japanTimeOffset = 9 * 60 * 60 * 1000 // 日本のタイムゾーンオフセット（9時間をミリ秒に変換）
+    const oneDayAgoTime = new Date(now.getTime() + japanTimeOffset - 24 * 60 * 60 * 1000) // 日本時間で1日前の時刻を計算
     const oneDayAgoTimeStr = oneDayAgoTime.toISOString()
     const { data: cleaningScheduleData, error: getCleaningScheduleError } = await supabase
       .from('cleaning_schedules')
