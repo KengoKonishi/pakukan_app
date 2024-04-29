@@ -139,7 +139,6 @@ const processEvent = async (event) => {
     const japanTimeOffset = 9 * 60 * 60 * 1000 // 日本のタイムゾーンオフセット（9時間をミリ秒に変換）
     const currentDateTime = new Date(now.getTime() + japanTimeOffset) // 日本時間で現在時刻
     const currentDateTimeStr = currentDateTime.toISOString()
-    console.log(currentDateTimeStr)
 
     // NOTE: 清掃員IDが紐づけられていない清掃スケジュールを募集中のシフトとしている。
     const { data: cleaningScheduleData } = await supabase
@@ -148,6 +147,7 @@ const processEvent = async (event) => {
       .is('cleaner_id', null)
       .gte('start_datetime', currentDateTimeStr) // 開始日が現在以降
       .eq('cleaning_status_id', 1) // 一応statusが未完了という条件も指定
+      .order('start_datetime')
 
     // 募集中のシフトが存在しない場合
     if (cleaningScheduleData.length === 0) {
@@ -396,6 +396,7 @@ const processEvent = async (event) => {
       .select('id, start_datetime, end_datetime, guest_houses (name)')
       .eq('cleaner_id', cleaner.id)
       .gte('start_datetime', oneDayAgoTimeStr)
+      .order('start_datetime')
 
     if (getCleaningScheduleError) {
       console.error(getCleaningScheduleError)
