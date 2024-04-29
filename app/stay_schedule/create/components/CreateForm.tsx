@@ -146,9 +146,9 @@ export default function SettingForm() {
         cleaning_status: CLEANING_STATUS_ID_PENDING,
       }
 
-      const { data, error } = await supabase.rpc('createStaySndCleaningSchedules', {
-        stayScheduleData,
-        cleaningScheduleData,
+      const { data, error } = await supabase.rpc('createStayAndCleaningSchedules', {
+        stay_schedule_data: stayScheduleData,
+        cleaning_schedule_data: cleaningScheduleData,
       })
 
       if (error) {
