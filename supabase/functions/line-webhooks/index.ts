@@ -5,6 +5,8 @@ import * as crypto from 'https://deno.land/std@0.166.0/node/crypto.ts'
 const LINE_REPLY_MESSAGE_URL = 'https://api.line.me/v2/bot/message/reply'
 const CLEANER_REGISTRATION_FORM_BASE_URL =
   'https://docs.google.com/forms/d/e/1FAIpQLSf0a2362CrlBG_V_ckjXFNE472LzvPoU8pcM77EeQpzW-5LXA/viewform?usp=pp_url&entry.503257359='
+const CLEANING_REPORT_BASE_URL =
+  'https://docs.google.com/forms/d/e/1FAIpQLSfcfRJBCaAJ6MleHyLjaJRD8y_Z8bUkG6D6U-StENGA263j8g/viewform?usp=pp_url&entry.1699498928=cleaningId&entry.847282419=cleanerName&entry.1904612076=cleaningScheduleStartDate&entry.2095971157=guestHouseName'
 
 const GOOGLE_CALENDAR_APP_URL =
   'https://script.google.com/macros/s/AKfycbwU95NcRyWH2WiWgAsphp169YsF8ceqvaPKgOgByhJfITa7aZUPLAMTCOCrOBYufQh7/exec'
@@ -216,6 +218,7 @@ const processEvent = async (event) => {
     const cleaner = await getCleaner(supabase, lineUserId)
     if (!cleaner) {
       // TODO: エラー処理
+      return
     }
 
     const postbackData = new URLSearchParams(event.postback.data)
@@ -307,6 +310,7 @@ const processEvent = async (event) => {
     const cleaner = await getCleaner(supabase, lineUserId)
     if (!cleaner) {
       // TODO: エラー処理
+      return
     }
 
     const now = new Date()
@@ -400,9 +404,194 @@ const processEvent = async (event) => {
   }
 
   /*
-    清掃報告機能
-    TODO:
+    清掃報告対象のシフト 一覧取得機能
   */
+  if (event.type === 'postback' && event.postback.data === 'action=GetCreaningReports') {
+    const cleaner = await getCleaner(supabase, lineUserId)
+    if (!cleaner) {
+      // TODO: エラー処理
+      return
+    }
+
+    const now = new Date()
+    const japanTimeOffset = 9 * 60 * 60 * 1000 // 日本のタイムゾーンオフセット（9時間をミリ秒に変換）
+    const currentDateTime = new Date(now.getTime() + japanTimeOffset) // 日本時間で現在時刻
+    const currentDateTimeStr = currentDateTime.toISOString()
+
+    // NOTE: 清掃員IDに紐づく清掃スケジュールのうち、開始済みでステータスが完了以外のものを清掃報告対象としている
+    const { data: cleaningScheduleData, error: getCleaningScheduleError } = await supabase
+      .from('cleaning_schedules')
+      .select('id, start_datetime, end_datetime, guest_houses (name)')
+      .eq('cleaner_id', cleaner.id)
+      .lte('start_datetime', currentDateTimeStr) // 開始日が現在以前
+      .in('cleaning_status_id', [1, 2, 3]) // statusが未完了、確認待ち、差し戻し
+      .order('start_datetime')
+
+    if (getCleaningScheduleError) {
+      console.error(getCleaningScheduleError)
+      // TODO: エラー処理
+      return
+    }
+
+    console.log(cleaningScheduleData)
+
+    // 清掃報告対象がない場合
+    if (cleaningScheduleData.length === 0) {
+      const replyMessages: TextMessage[] = [
+        {
+          type: 'text',
+          text: '現在、清掃報告の対象はありません。',
+        },
+      ]
+      await replyToLINE(event.replyToken, replyMessages)
+      return
+    }
+
+    // 清掃報告対象のシフトが存在する場合
+    const contents: CarouselContainerContent[] = []
+    cleaningScheduleData.forEach((schedule) => {
+      const startDatetime = new Date(schedule.start_datetime).toLocaleString()
+      const endDatetime = new Date(schedule.end_datetime).toLocaleString()
+      const scheduleInfo = `宿泊施設: ${schedule.guest_houses.name}\n\n開始日: ${startDatetime}\n\n終了日: ${endDatetime}`
+
+      contents.push({
+        type: 'bubble',
+        body: {
+          type: 'box',
+          layout: 'horizontal',
+          contents: [
+            {
+              type: 'text',
+              text: scheduleInfo,
+              wrap: true,
+            },
+          ],
+        },
+        footer: {
+          type: 'box',
+          layout: 'horizontal',
+          contents: [
+            {
+              type: 'button',
+              style: 'primary',
+              action: {
+                type: 'postback',
+                label: '清掃報告する',
+                data: `action=getCreaningReportUrl&id=${schedule.id}`,
+              },
+            },
+          ],
+        },
+      })
+    })
+
+    const replyMessages: FlexMessage[] = [
+      {
+        type: 'flex',
+        altText: 'This is a Flex Message',
+        contents: {
+          type: 'carousel',
+          contents: [
+            {
+              type: 'bubble',
+              body: {
+                type: 'box',
+                layout: 'horizontal',
+                contents: [
+                  {
+                    type: 'text',
+                    text: '清掃報告するシフトを選んでください。',
+                    wrap: true,
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      },
+      // シフト一覧部分
+      {
+        type: 'flex',
+        altText: 'This is a Flex Message',
+        contents: {
+          type: 'carousel',
+          contents: contents,
+        },
+      },
+    ]
+
+    await replyToLINE(event.replyToken, replyMessages)
+    return
+  }
+
+  /*
+    清掃報告URL取得機能
+    NOTE: action=getCreaningReportUrl&id=${id}
+  */
+  if (
+    event.type === 'postback' &&
+    event.postback.data.startsWith('action=getCreaningReportUrl')
+  ) {
+    const cleaner = await getCleaner(supabase, lineUserId)
+    if (!cleaner) {
+      // TODO: エラー処理
+      return
+    }
+
+    const postbackData = new URLSearchParams(event.postback.data)
+    const cleaningScheduleId = postbackData.get('id') as string
+
+    const { data: cleaningSchedule, error: getCleaningScheduleError } = await supabase
+      .from('cleaning_schedules')
+      .select('id, start_datetime, end_datetime, guest_houses (name)')
+      .limit(1)
+      .single()
+      .eq('id', cleaningScheduleId)
+      .eq('cleaner_id', cleaner.id)
+
+    if (getCleaningScheduleError) {
+      console.error(getCleaningScheduleError)
+      // TODO: エラー処理
+      return
+    }
+
+    const { data: cleaningReportData, error: getCleaningReportError } = await supabase
+      .from('cleaning_reports')
+      .select(
+        'id, form_url, cleaning_schedules (id, start_datetime, end_datetime, guest_houses (name))',
+      )
+      .eq('cleaning_schedule_id', cleaningScheduleId)
+      .order('id')
+
+    if (getCleaningReportError) {
+      console.error(getCleaningReportError)
+      // TODO: エラー処理
+      return
+    }
+
+    let cleaningFormUrl = ''
+    if (cleaningReportData.length === 0) {
+      // 報告データがまだない場合
+      console.log('cleaningReportData.length === 0')
+      cleaningFormUrl = CLEANING_REPORT_BASE_URL.replace('cleaningId', cleaningScheduleId)
+        .replace('cleanerName', cleaner.name)
+        .replace('cleaningScheduleStartDate', cleaningSchedule.start_datetime)
+        .replace('guestHouseName', cleaningSchedule.guest_houses.name)
+    } else {
+      // 報告データがある場合
+      const cleaningReport = cleaningReportData[0]
+      cleaningFormUrl = cleaningReport.form_url
+    }
+
+    const replyMessages: TextMessage[] = [
+      {
+        type: 'text',
+        text: `以下のURLから報告してください。\n${cleaningFormUrl}`,
+      },
+    ]
+    await replyToLINE(event.replyToken, replyMessages)
+    return
+  }
 }
 
 const getCleaner = async (supabase, lineUserId: string) => {
