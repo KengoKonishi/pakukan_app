@@ -52,11 +52,6 @@ const processEvent = async (event) => {
 
   const lineUserId = event.source.userId
 
-  const headers = {
-    Authorization: `Bearer ${Deno.env.get('LINE_CHANNEL_ACCESS_TOKEN') ?? ''}`,
-    'Content-Type': 'application/json',
-  }
-
   /*
     清掃員プロフィール登録機能
     公式アカウントが追加されたとき もしくは プロフィール登録と入力されたとき
@@ -75,33 +70,18 @@ const processEvent = async (event) => {
 
     // すでにLINEUSERIDが登録されている場合
     if (cleanersData && cleanersData.length !== 0) {
-      const replyMessages = [
+      const replyMessages: TextMessage[] = [
         {
           type: 'text',
           text: 'プロフィール登録済みです。\n登録情報に変更がある場合はお知らせください。',
         },
       ]
-
-      const dataString = JSON.stringify({
-        replyToken: event.replyToken,
-        messages: replyMessages,
-      })
-
-      try {
-        await fetch(LINE_REPLY_MESSAGE_URL, {
-          method: 'POST',
-          headers: headers,
-          body: dataString,
-        })
-      } catch (e) {
-        console.error(e)
-      }
-
+      await replyToLINE(event.replyToken, replyMessages)
       return
     }
 
     // LINEUSERIDが未登録の場合
-    const replyMessages = [
+    const replyMessages: TextMessage[] = [
       {
         type: 'text',
         text: '以下のフォームから登録を行なってください',
@@ -111,21 +91,8 @@ const processEvent = async (event) => {
         text: `${CLEANER_REGISTRATION_FORM_BASE_URL}${lineUserId}`,
       },
     ]
-
-    const dataString = JSON.stringify({
-      replyToken: event.replyToken,
-      messages: replyMessages,
-    })
-
-    try {
-      await fetch(LINE_REPLY_MESSAGE_URL, {
-        method: 'POST',
-        headers: headers,
-        body: dataString,
-      })
-    } catch (e) {
-      console.error(e)
-    }
+    await replyToLINE(event.replyToken, replyMessages)
+    return
   }
 
   /*
@@ -151,28 +118,13 @@ const processEvent = async (event) => {
 
     // 募集中のシフトが存在しない場合
     if (cleaningScheduleData.length === 0) {
-      const replyMessages = [
+      const replyMessages: TextMessage[] = [
         {
           type: 'text',
           text: '現在、募集中のシフトはありません。',
         },
       ]
-
-      const dataString = JSON.stringify({
-        replyToken: event.replyToken,
-        messages: replyMessages,
-      })
-
-      try {
-        await fetch(LINE_REPLY_MESSAGE_URL, {
-          method: 'POST',
-          headers: headers,
-          body: dataString,
-        })
-      } catch (e) {
-        console.error(e)
-      }
-
+      await replyToLINE(event.replyToken, replyMessages)
       return
     }
 
@@ -215,7 +167,7 @@ const processEvent = async (event) => {
       })
     })
 
-    const messages: FlexMessage[] = [
+    const replyMessages: FlexMessage[] = [
       {
         type: 'flex',
         altText: 'This is a Flex Message',
@@ -249,16 +201,7 @@ const processEvent = async (event) => {
       },
     ]
 
-    try {
-      await fetch(LINE_REPLY_MESSAGE_URL, {
-        method: 'POST',
-        headers: headers,
-        body: JSON.stringify({ replyToken: event.replyToken, messages }),
-      })
-    } catch (e) {
-      console.error(e)
-    }
-
+    await replyToLINE(event.replyToken, replyMessages)
     return
   }
 
@@ -271,6 +214,9 @@ const processEvent = async (event) => {
     event.postback.data.startsWith('action=createCreanSchedule')
   ) {
     const cleaner = await getCleaner(supabase, lineUserId)
+    if (!cleaner) {
+      // TODO: エラー処理
+    }
 
     const postbackData = new URLSearchParams(event.postback.data)
     const cleaningScheduleId = postbackData.get('id')
@@ -297,27 +243,13 @@ const processEvent = async (event) => {
 
     // シフト登録できなかった場合
     if (updateCount === 0) {
-      const replyMessages = [
+      const replyMessages: TextMessage[] = [
         {
           type: 'text',
           text: '申し訳ありません。このシフトは埋まってしまいました。',
         },
       ]
-
-      const dataString = JSON.stringify({
-        replyToken: event.replyToken,
-        messages: replyMessages,
-      })
-
-      try {
-        await fetch(LINE_REPLY_MESSAGE_URL, {
-          method: 'POST',
-          headers: headers,
-          body: dataString,
-        })
-      } catch (e) {
-        console.error(e)
-      }
+      await replyToLINE(event.replyToken, replyMessages)
       return
     }
 
@@ -355,27 +287,13 @@ const processEvent = async (event) => {
     const endDatetime = new Date(updateCleaningSchedule.end_datetime).toLocaleString() // LINE表示用
     const scheduleInfo = `宿泊施設: ${guestHouse}\n\n開始日: ${startDatetime}\n\n終了日: ${endDatetime}`
 
-    const replyMessages = [
+    const replyMessages: TextMessage[] = [
       {
         type: 'text',
         text: `以下のシフトを登録しました。\n\n${scheduleInfo}`,
       },
     ]
-
-    const dataString = JSON.stringify({
-      replyToken: event.replyToken,
-      messages: replyMessages,
-    })
-
-    try {
-      await fetch(LINE_REPLY_MESSAGE_URL, {
-        method: 'POST',
-        headers: headers,
-        body: dataString,
-      })
-    } catch (e) {
-      console.error(e)
-    }
+    await replyToLINE(event.replyToken, replyMessages)
     return
   }
 
@@ -387,6 +305,9 @@ const processEvent = async (event) => {
     event.postback.data === 'action=getOwnCreaningSchedules'
   ) {
     const cleaner = await getCleaner(supabase, lineUserId)
+    if (!cleaner) {
+      // TODO: エラー処理
+    }
 
     const now = new Date()
     const japanTimeOffset = 9 * 60 * 60 * 1000 // 日本のタイムゾーンオフセット（9時間をミリ秒に変換）
@@ -407,27 +328,13 @@ const processEvent = async (event) => {
 
     // シフトがない場合
     if (cleaningScheduleData.length === 0) {
-      const replyMessages = [
+      const replyMessages: TextMessage[] = [
         {
           type: 'text',
           text: '現在、シフトはありません。',
         },
       ]
-
-      const dataString = JSON.stringify({
-        replyToken: event.replyToken,
-        messages: replyMessages,
-      })
-
-      try {
-        await fetch(LINE_REPLY_MESSAGE_URL, {
-          method: 'POST',
-          headers: headers,
-          body: dataString,
-        })
-      } catch (e) {
-        console.error(e)
-      }
+      await replyToLINE(event.replyToken, replyMessages)
       return
     }
 
@@ -454,7 +361,7 @@ const processEvent = async (event) => {
       })
     })
 
-    const messages: FlexMessage[] = [
+    const replyMessages: FlexMessage[] = [
       {
         type: 'flex',
         altText: 'This is a Flex Message',
@@ -488,16 +395,7 @@ const processEvent = async (event) => {
       },
     ]
 
-    try {
-      await fetch(LINE_REPLY_MESSAGE_URL, {
-        method: 'POST',
-        headers: headers,
-        body: JSON.stringify({ replyToken: event.replyToken, messages }),
-      })
-    } catch (e) {
-      console.error(e)
-    }
-
+    await replyToLINE(event.replyToken, replyMessages)
     return
   }
 
@@ -517,11 +415,36 @@ const getCleaner = async (supabase, lineUserId: string) => {
 
   if (getCleanerError) {
     console.error(getCleanerError)
-    // TODO: エラー処理
-    return
   }
 
   return cleaner
+}
+
+// NOTE: 応答トークンを使用してLINEに返信する。返信した後、そのイベントに対する処理は終了する。
+const replyToLINE = async (
+  lineReplyToken: string,
+  replyMessages: TextMessage[] | FlexMessage[],
+) => {
+  const headers = {
+    Authorization: `Bearer ${Deno.env.get('LINE_CHANNEL_ACCESS_TOKEN') ?? ''}`,
+    'Content-Type': 'application/json',
+  }
+
+  const dataString = JSON.stringify({
+    replyToken: lineReplyToken,
+    messages: replyMessages,
+  })
+
+  try {
+    await fetch(LINE_REPLY_MESSAGE_URL, {
+      method: 'POST',
+      headers: headers,
+      body: dataString,
+    })
+  } catch (e) {
+    console.error(e)
+  }
+  return
 }
 
 type CarouselContainerContent = {
@@ -556,10 +479,15 @@ type CarouselContainerContent = {
 }
 
 type FlexMessage = {
-  type: string
+  type: 'flex'
   altText: string
   contents: {
     type: 'carousel'
     contents: CarouselContainerContent[]
   }
+}
+
+type TextMessage = {
+  type: 'text'
+  text: string
 }
