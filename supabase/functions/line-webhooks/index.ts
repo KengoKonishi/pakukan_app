@@ -221,6 +221,29 @@ const processEvent = async (event) => {
         altText: 'This is a Flex Message',
         contents: {
           type: 'carousel',
+          contents: [
+            {
+              type: 'bubble',
+              body: {
+                type: 'box',
+                layout: 'horizontal',
+                contents: [
+                  {
+                    type: 'text',
+                    text: '現在募集中のシフトです。',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      },
+      // シフト一覧部分
+      {
+        type: 'flex',
+        altText: 'This is a Flex Message',
+        contents: {
+          type: 'carousel',
           contents: contents,
         },
       },
@@ -459,6 +482,29 @@ const processEvent = async (event) => {
         altText: 'This is a Flex Message',
         contents: {
           type: 'carousel',
+          contents: [
+            {
+              type: 'bubble',
+              body: {
+                type: 'box',
+                layout: 'horizontal',
+                contents: [
+                  {
+                    type: 'text',
+                    text: '現在入っているシフトです。',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      },
+      // シフト一覧部分
+      {
+        type: 'flex',
+        altText: 'This is a Flex Message',
+        contents: {
+          type: 'carousel',
           contents: contents,
         },
       },
@@ -492,7 +538,7 @@ type CarouselContainerContent = {
       {
         type: 'text'
         text: string
-        wrap: boolean
+        wrap?: boolean
       },
     ]
   }
