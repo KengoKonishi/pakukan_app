@@ -22,6 +22,7 @@ export default function SettingForm() {
   const [validationError, setValidationError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const supabase = createClient()
+  const CLEANING_STATUS_ID_PENDING = 1
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
@@ -123,7 +124,8 @@ export default function SettingForm() {
     }
 
     try {
-      // 更新するデータを準備
+      // Database functionsを使って、トランザクション実装したい
+      // 更新する宿泊スケジュールデータを準備
       const stayScheduleData = {
         guest_house_id: guesthouseId,
         start_datetime: checkInDatetime,
@@ -135,16 +137,46 @@ export default function SettingForm() {
         others: others,
       }
 
-      const createStaySchedule = await supabase
-        .from('stay_schedules')
-        .insert(stayScheduleData)
-
-      if (createStaySchedule.error) {
-        throw createStaySchedule.error
+      // 更新する清掃員シフトスケジュールデータを準備
+      const cleaningScheduleData = {
+        cleaner_id: null, //初期設定はnullで設定し、LINEでシフト登録した時にcleaner_idを登録する
+        guest_house_id: guesthouseId,
+        start_datetime: checkInDatetime,
+        end_datetime: checkOutDatetime,
+        cleaning_status: CLEANING_STATUS_ID_PENDING,
       }
+
+      const { data, error } = await supabase.rpc('createstayandcleaningschedules', {
+        stayScheduleData,
+        cleaningScheduleData,
+      })
+
+      if (error) {
+        console.error('Failed to call create_stay_and_cleaning_schedules:', error)
+        throw error
+      }
+
+      // // 宿泊スケジュールレコードの作成
+      // const createStaySchedule = await supabase
+      //   .from('stay_schedules')
+      //   .insert(stayScheduleData)
+
+      // if (createStaySchedule.error) {
+      //   throw createStaySchedule.error
+      // }
+
+      // // 清掃員シフトスケジュールレコードの作成
+      // const createCleaningSchedule = await supabase
+      //   .from('cleaning_schedules')
+      //   .insert(cleaningScheduleData)
+
+      // if (createCleaningSchedule.error) {
+      //   throw createCleaningSchedule.error
+      // }
 
       // すべての更新処理が成功した場合の処理
       console.log('フォームの更新処理が成功しました')
+      console.log(data)
       setTimeout(() => {
         setSuccessMessage('作成が成功しました')
       }, 1000)
