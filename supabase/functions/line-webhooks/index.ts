@@ -395,7 +395,7 @@ const processEvent = async (event) => {
   */
   if (
     event.type === 'postback' &&
-    event.postback.data.startsWith('action=getOwnCreaningSchedules')
+    event.postback.data === 'action=getOwnCreaningSchedules'
   ) {
     const { data: cleaner, error: getCleanerError } = await supabase
       .from('cleaners')
