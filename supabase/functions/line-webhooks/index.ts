@@ -6,7 +6,7 @@ const LINE_REPLY_MESSAGE_URL = 'https://api.line.me/v2/bot/message/reply'
 const CLEANER_REGISTRATION_FORM_BASE_URL =
   'https://docs.google.com/forms/d/e/1FAIpQLSf0a2362CrlBG_V_ckjXFNE472LzvPoU8pcM77EeQpzW-5LXA/viewform?usp=pp_url&entry.503257359='
 const CLEANING_REPORT_BASE_URL =
-  'https://docs.google.com/forms/d/e/1FAIpQLSfcfRJBCaAJ6MleHyLjaJRD8y_Z8bUkG6D6U-StENGA263j8g/viewform?usp=pp_url&entry.1699498928=cleaningId&entry.847282419=cleanerName&entry.1904612076=cleaningScheduleStartDate&entry.2095971157=guestHouseName'
+  'https://docs.google.com/forms/d/e/1FAIpQLSfcfRJBCaAJ6MleHyLjaJRD8y_Z8bUkG6D6U-StENGA263j8g/viewform?usp=pp_url&entry.1699498928=cleaningId&entry.1337618168=email&entry.847282419=cleanerName&entry.1904612076=cleaningScheduleStartDate&entry.2095971157=guestHouseName'
 
 const GOOGLE_CALENDAR_APP_URL =
   'https://script.google.com/macros/s/AKfycbwU95NcRyWH2WiWgAsphp169YsF8ceqvaPKgOgByhJfITa7aZUPLAMTCOCrOBYufQh7/exec'
@@ -574,6 +574,7 @@ const processEvent = async (event) => {
       // 報告データがまだない場合
       console.log('cleaningReportData.length === 0')
       cleaningFormUrl = CLEANING_REPORT_BASE_URL.replace('cleaningId', cleaningScheduleId)
+        .replace('email', cleaner.email)
         .replace('cleanerName', cleaner.name)
         .replace('cleaningScheduleStartDate', cleaningSchedule.start_datetime)
         .replace('guestHouseName', cleaningSchedule.guest_houses.name)
