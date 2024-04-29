@@ -270,21 +270,10 @@ const processEvent = async (event) => {
     event.type === 'postback' &&
     event.postback.data.startsWith('action=createCreanSchedule')
   ) {
+    const cleaner = await getCleaner(supabase, lineUserId)
+
     const postbackData = new URLSearchParams(event.postback.data)
     const cleaningScheduleId = postbackData.get('id')
-
-    const { data: cleaner, error: getCleanerError } = await supabase
-      .from('cleaners')
-      .select()
-      .limit(1)
-      .single()
-      .eq('line_user_id', lineUserId)
-
-    if (getCleanerError) {
-      console.log(getCleanerError)
-      // TODO: エラー処理
-      return
-    }
 
     const {
       count: updateCount,
@@ -397,18 +386,7 @@ const processEvent = async (event) => {
     event.type === 'postback' &&
     event.postback.data === 'action=getOwnCreaningSchedules'
   ) {
-    const { data: cleaner, error: getCleanerError } = await supabase
-      .from('cleaners')
-      .select()
-      .limit(1)
-      .single()
-      .eq('line_user_id', lineUserId)
-
-    if (getCleanerError) {
-      console.error(getCleanerError)
-      // TODO: エラー処理
-      return
-    }
+    const cleaner = await getCleaner(supabase, lineUserId)
 
     const now = new Date()
     const japanTimeOffset = 9 * 60 * 60 * 1000 // 日本のタイムゾーンオフセット（9時間をミリ秒に変換）
@@ -527,6 +505,23 @@ const processEvent = async (event) => {
     清掃報告機能
     TODO:
   */
+}
+
+const getCleaner = async (supabase, lineUserId: string) => {
+  const { data: cleaner, error: getCleanerError } = await supabase
+    .from('cleaners')
+    .select()
+    .limit(1)
+    .single()
+    .eq('line_user_id', lineUserId)
+
+  if (getCleanerError) {
+    console.error(getCleanerError)
+    // TODO: エラー処理
+    return
+  }
+
+  return cleaner
 }
 
 type CarouselContainerContent = {
