@@ -135,19 +135,26 @@ const processEvent = async (event) => {
     event.type === 'postback' &&
     event.postback.data === 'action=getAvairableCreaningSchedules'
   ) {
-    // NOTE: 清掃員IDが紐づけられていない清掃スケジュールを募集中のシフトとしている。一応statusが未完了という条件も指定している
+    const now = new Date()
+    const japanTimeOffset = 9 * 60 * 60 * 1000 // 日本のタイムゾーンオフセット（9時間をミリ秒に変換）
+    const currentDateTime = new Date(now.getTime() + japanTimeOffset) // 日本時間で現在時刻
+    const currentDateTimeStr = currentDateTime.toISOString()
+
+    // NOTE: 清掃員IDが紐づけられていない清掃スケジュールを募集中のシフトとしている。
     const { data: cleaningScheduleData } = await supabase
       .from('cleaning_schedules')
       .select('id, start_datetime, end_datetime, guest_houses (name)')
       .is('cleaner_id', null)
-      .eq('cleaning_status_id', 1)
+      .gte('start_datetime', currentDateTimeStr) // 開始日が現在以降
+      .eq('cleaning_status_id', 1) // 一応statusが未完了という条件も指定
+      .order('start_datetime')
 
     // 募集中のシフトが存在しない場合
     if (cleaningScheduleData.length === 0) {
       const replyMessages = [
         {
           type: 'text',
-          text: '現在募集中のシフトはありません。',
+          text: '現在、募集中のシフトはありません。',
         },
       ]
 
@@ -209,6 +216,29 @@ const processEvent = async (event) => {
     })
 
     const messages: FlexMessage[] = [
+      {
+        type: 'flex',
+        altText: 'This is a Flex Message',
+        contents: {
+          type: 'carousel',
+          contents: [
+            {
+              type: 'bubble',
+              body: {
+                type: 'box',
+                layout: 'horizontal',
+                contents: [
+                  {
+                    type: 'text',
+                    text: '現在募集中のシフトです。',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      },
+      // シフト一覧部分
       {
         type: 'flex',
         altText: 'This is a Flex Message',
@@ -362,8 +392,136 @@ const processEvent = async (event) => {
 
   /*
     シフト確認機能
-    TODO:
   */
+  if (
+    event.type === 'postback' &&
+    event.postback.data.startsWith('action=getOwnCreaningSchedules')
+  ) {
+    const { data: cleaner, error: getCleanerError } = await supabase
+      .from('cleaners')
+      .select()
+      .limit(1)
+      .single()
+      .eq('line_user_id', lineUserId)
+
+    if (getCleanerError) {
+      console.error(getCleanerError)
+      // TODO: エラー処理
+      return
+    }
+
+    const now = new Date()
+    const japanTimeOffset = 9 * 60 * 60 * 1000 // 日本のタイムゾーンオフセット（9時間をミリ秒に変換）
+    const oneDayAgoTime = new Date(now.getTime() + japanTimeOffset - 24 * 60 * 60 * 1000) // 日本時間で1日前の時刻を計算
+    const oneDayAgoTimeStr = oneDayAgoTime.toISOString()
+    const { data: cleaningScheduleData, error: getCleaningScheduleError } = await supabase
+      .from('cleaning_schedules')
+      .select('id, start_datetime, end_datetime, guest_houses (name)')
+      .eq('cleaner_id', cleaner.id)
+      .gte('start_datetime', oneDayAgoTimeStr)
+      .order('start_datetime')
+
+    if (getCleaningScheduleError) {
+      console.error(getCleaningScheduleError)
+      // TODO: エラー処理
+      return
+    }
+
+    // シフトがない場合
+    if (cleaningScheduleData.length === 0) {
+      const replyMessages = [
+        {
+          type: 'text',
+          text: '現在、シフトはありません。',
+        },
+      ]
+
+      const dataString = JSON.stringify({
+        replyToken: event.replyToken,
+        messages: replyMessages,
+      })
+
+      try {
+        await fetch(LINE_REPLY_MESSAGE_URL, {
+          method: 'POST',
+          headers: headers,
+          body: dataString,
+        })
+      } catch (e) {
+        console.error(e)
+      }
+      return
+    }
+
+    // シフトがある場合
+    const contents: CarouselContainerContent[] = []
+    cleaningScheduleData.forEach((schedule) => {
+      const startDatetime = new Date(schedule.start_datetime).toLocaleString()
+      const endDatetime = new Date(schedule.end_datetime).toLocaleString()
+      const scheduleInfo = `宿泊施設: ${schedule.guest_houses.name}\n\n開始日: ${startDatetime}\n\n終了日: ${endDatetime}`
+
+      contents.push({
+        type: 'bubble',
+        body: {
+          type: 'box',
+          layout: 'horizontal',
+          contents: [
+            {
+              type: 'text',
+              text: scheduleInfo,
+              wrap: true,
+            },
+          ],
+        },
+      })
+    })
+
+    const messages: FlexMessage[] = [
+      {
+        type: 'flex',
+        altText: 'This is a Flex Message',
+        contents: {
+          type: 'carousel',
+          contents: [
+            {
+              type: 'bubble',
+              body: {
+                type: 'box',
+                layout: 'horizontal',
+                contents: [
+                  {
+                    type: 'text',
+                    text: '現在入っているシフトです。',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      },
+      // シフト一覧部分
+      {
+        type: 'flex',
+        altText: 'This is a Flex Message',
+        contents: {
+          type: 'carousel',
+          contents: contents,
+        },
+      },
+    ]
+
+    try {
+      await fetch(LINE_REPLY_MESSAGE_URL, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({ replyToken: event.replyToken, messages }),
+      })
+    } catch (e) {
+      console.error(e)
+    }
+
+    return
+  }
 
   /*
     清掃報告機能
@@ -380,11 +538,11 @@ type CarouselContainerContent = {
       {
         type: 'text'
         text: string
-        wrap: boolean
+        wrap?: boolean
       },
     ]
   }
-  footer: {
+  footer?: {
     type: string
     layout: string
     contents: [
