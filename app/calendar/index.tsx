@@ -25,7 +25,6 @@ const AdminCalendar = () => {
     endDate: '',
     scheduleId: 0,
   })
-  const [scheduleDeleted, setScheduleDeleted] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
 
   useEffect(() => {
@@ -35,7 +34,7 @@ const AdminCalendar = () => {
         .filter((option) => option.checked)
         .map((option) => option.id.toString()),
     )
-  }, [guestHouseOptions])
+  }, [guestHouseOptions, fetchSchedules])
 
   // 民泊施設のチェックボックス変更時の処理
   const onChangeGuestHouseCheckBox = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -105,11 +104,7 @@ const AdminCalendar = () => {
       .map((option) => option.id.toString())
 
     void fetchSchedules(checkedGuestHouseIds)
-    setSuccessMessage('削除が成功しました')
-
-    // スケジュールが削除されたことをリセット
-    setScheduleDeleted(false)
-  }, [guestHouseOptions])
+  }, [guestHouseOptions, fetchSchedules])
 
   // 清掃スケジュール削除時の処理
   const handleDeleteCleaningSchedule = useCallback(() => {
@@ -118,16 +113,13 @@ const AdminCalendar = () => {
         .filter((option) => option.checked)
         .map((option) => option.id.toString()),
     )
+    setSuccessMessage('削除が成功しました')
     // TODO: トーストを表示する
-  }, [guestHouseOptions])
+  }, [guestHouseOptions, fetchSchedules])
 
-  // 削除後の処理
+  // 宿泊スケジュール削除後の処理
   const handleScheduleDeleted = () => {
-    // スケジュールが削除されたことを設定
-    setScheduleDeleted(true)
-    if (scheduleDeleted) {
-      return
-    }
+    setSuccessMessage('削除が成功しました')
   }
 
   return (
@@ -156,7 +148,7 @@ const AdminCalendar = () => {
           <CleaningScheduleModal
             cleaningScheduleID={modalState.scheduleId}
             onClose={handleModalClose}
-            onDeleteSchedule={handleDeleteCleaningSchedule}
+            handleDeleteCleaningSchedule={handleDeleteCleaningSchedule}
           />
         )}
       <div className='flex flex-row justify-center items-center w-full'>

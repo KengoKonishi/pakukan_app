@@ -24,7 +24,7 @@ export const CreateScheduleModal = ({
     }
     if (selected === 'cleaning') {
       // 清掃員スケジュール作成画面へのリンク
-      destinationUrl = `/staff_schedule/create?startDate=${startDate}&endDate=${endDate}`
+      destinationUrl = `/cleaning_schedule/create?startDatetime=${startDate}&endDatetime=${endDate}`
     }
 
     return (

@@ -55,8 +55,8 @@ const MenuItemCalender = () => {
       </div>
       {isExpanded && (
         <div className='text-sm ml-2'>
-          <MenuItem link='/stay_schedule/create'>宿泊スケジュール作成</MenuItem>
-          <MenuItem link='/staff_schedule/create'>清掃員スケジュール作成</MenuItem>
+          <MenuItem link='/stay_schedule/create/'>宿泊スケジュール作成</MenuItem>
+          <MenuItem link='/cleaning_schedule/create/'>清掃員スケジュール作成</MenuItem>
         </div>
       )}
     </div>

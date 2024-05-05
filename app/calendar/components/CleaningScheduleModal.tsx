@@ -1,7 +1,9 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
+import DeleteButton from './DeleteButton'
 
 type CleaningSchedule = {
   id: number
@@ -21,17 +23,17 @@ type CleaningSchedule = {
 export const CleaningScheduleModal = ({
   cleaningScheduleID,
   onClose,
-  onDeleteSchedule,
+  handleDeleteCleaningSchedule,
 }: {
   cleaningScheduleID: number
   onClose: () => void
-  onDeleteSchedule: () => void
+  handleDeleteCleaningSchedule: () => void
 }) => {
   const [cleaningSchedule, setCleaningSchedule] = useState<CleaningSchedule | null>(null)
+  const supabase = createClient()
 
   useEffect(() => {
     const getcleaningSchedule = async (id: number) => {
-      const supabase = createClient()
       const { data, error } = await supabase
         .from('cleaning_schedules')
         .select(
@@ -44,27 +46,46 @@ export const CleaningScheduleModal = ({
         return
       }
 
-      setCleaningSchedule(data[0])
+      if (data && data.length > 0) {
+        setCleaningSchedule(data[0])
+      } else {
+        // データが見つからない場合の処理を追加するか、適切なエラーメッセージをログに出力します。
+        console.log('データが見つかりませんでした')
+      }
     }
 
     void getcleaningSchedule(cleaningScheduleID)
-  }, [cleaningScheduleID])
+  }, [cleaningScheduleID, supabase])
 
-  const onClickDeleteButton = async () => {
-    if (confirm('スケジュールを削除します。よろしいですか？')) {
-      const supabase = createClient()
-      const { error } = await supabase
-        .from('cleaning_schedules')
+  // レコード削除
+  const handleDelete = async (id: number): Promise<void> => {
+    try {
+      // TODO:トランザクション制御が必要なので、supabase database functionsで後追い設定必要
+      // cleaning_scheduleレコード削除前に外部キーとして紐づくcleaning_reportsも削除する
+      const { error: cleaningReportsError } = await supabase
+        .from('cleaning_reports')
         .delete()
-        .eq('id', cleaningScheduleID)
-
-      if (error) {
-        console.log(error)
-        return
+        .eq('cleaning_schedule_id', id)
+      if (cleaningReportsError) {
+        throw cleaningReportsError
       }
 
+      const { error } = await supabase.from('cleaning_schedules').delete().match({ id })
+      if (error) {
+        throw error
+      }
+
+      // すべての更新処理が成功した場合の処理
+      console.log('フォームの削除処理が成功しました')
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      // 削除が成功したら親コンポーネントに通知
+      handleDeleteCleaningSchedule()
+
+      // モーダルを閉じる
       onClose()
-      onDeleteSchedule()
+    } catch (error) {
+      console.error('Error deleting stay schedule:', error)
     }
   }
 
@@ -98,12 +119,10 @@ export const CleaningScheduleModal = ({
               </h3>
             </div>
             <div className='flex justify-end'>
-              <button
-                className='py-2 px-4 rounded-md no-underline'
-                onClick={() => void onClickDeleteButton()}
-              >
-                削除
-              </button>
+              <Link href={`/cleaning_schedule/edit/${cleaningSchedule.id}`}>
+                <button className='py-2 px-4 rounded-md no-underline'>編集</button>
+              </Link>
+              <DeleteButton onConfirmDelete={() => handleDelete(cleaningSchedule.id)} />
             </div>
             <div className='flex gap-20 p-5'>
               <div>

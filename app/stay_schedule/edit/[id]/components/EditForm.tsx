@@ -4,13 +4,16 @@ import React, { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import SubmitButton from '../../../components/SubmitButton'
 
-export default function SettingForm() {
+export default function EditForm() {
   const { id } = useParams<{ id: string }>()
-  const staySchedueId = parseInt(id)
+  const stayScheduleId = parseInt(id)
   const [staySchedule, setStaySchedule] = useState<
     {
       id: number
-      guest_house_id: number | null
+      guest_houses: {
+        id: number
+        name: string
+      } | null
       start_datetime: string
       end_datetime: string
       guest_name: string
@@ -39,9 +42,9 @@ export default function SettingForm() {
         const { data: stayData, error: stayError } = await supabase
           .from('stay_schedules')
           .select(
-            `id, guest_house_id, start_datetime, end_datetime, guest_name, numbers_of_guests, amenities_info, bag_recieve_info, others`,
+            `id, guest_houses(id, name), start_datetime, end_datetime, guest_name, numbers_of_guests, amenities_info, bag_recieve_info, others`,
           )
-          .eq('id', staySchedueId)
+          .eq('id', stayScheduleId)
 
         if (stayError) {
           throw stayError
@@ -49,22 +52,8 @@ export default function SettingForm() {
 
         setStaySchedule(stayData)
 
-        // stayScheduleが存在し、かつguest_house_idがnullでない場合にfetchGuestHouseを実行する
-        if (stayData.length > 0 && stayData[0].guest_house_id !== null) {
-          // 選択された宿泊施設名の取得
-          const { data: guestHouseData, error: guestHouseError } = await supabase
-            .from('guest_houses')
-            .select(`id, name`)
-            .eq('is_deleted', 0)
-            .eq('id', stayData[0].guest_house_id)
-
-          if (guestHouseError) {
-            throw guestHouseError
-          }
-
-          setGuesthouseId(guestHouseData[0].id)
-          setGuesthouseName(guestHouseData[0].name)
-        }
+        setGuesthouseId(stayData[0]?.guest_houses.id)
+        setGuesthouseName(stayData[0]?.guest_houses.name)
 
         // 宿泊施設一覧の取得
         const { data: guestHousesData, error: guestHousesError } = await supabase
@@ -90,7 +79,7 @@ export default function SettingForm() {
     }
 
     void fetchData()
-  }, [supabase, staySchedueId])
+  }, [supabase, stayScheduleId])
 
   const handleGuesthouseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedIndex = guesthouses.names.indexOf(e.target.value)
@@ -150,7 +139,7 @@ export default function SettingForm() {
     }
 
     try {
-      // 更新するデータを準備
+      // 更新する宿泊スケジュールデータを準備
       const stayScheduleData = {
         guest_house_id: guesthouseId,
         start_datetime: staySchedule[0].start_datetime,
@@ -161,12 +150,11 @@ export default function SettingForm() {
         bag_recieve_info: staySchedule[0].bag_recieve_info,
         others: staySchedule[0].others,
       }
-      console.log(stayScheduleData)
 
       const createStaySchedule = await supabase
         .from('stay_schedules')
         .update(stayScheduleData)
-        .eq('id', staySchedueId)
+        .eq('id', stayScheduleId)
 
       if (createStaySchedule.error) {
         throw createStaySchedule.error
