@@ -23,11 +23,6 @@ const GUEST_DEFAULT_CHECK_IN_TIME = 15
 // 宿泊者のデフォルトチェックアウト時刻(単位：h)
 const GUEST_DEFAULT_CHECK_OUT_TIME = 11
 
-interface GuestHouse {
-  id: number
-  name: string
-}
-
 export default function CreateForm() {
   const [checkInDatetime, setCheckInDatetime] = useState('')
   const [checkOutDatetime, setCheckOutDatetime] = useState('')

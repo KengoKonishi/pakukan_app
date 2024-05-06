@@ -10,11 +10,6 @@ const GUEST_DEFAULT_CHECK_IN_TIME = 12
 // 清掃員のデフォルト終了時刻(単位：h)
 const GUEST_DEFAULT_CHECK_OUT_TIME = 15
 
-interface GuestHouse {
-  id: number
-  name: string
-}
-
 export default function CreateForm() {
   const [checkInDatetime, setCheckInDatetime] = useState('')
   const [checkOutDatetime, setCheckOutDatetime] = useState('')
@@ -24,7 +19,6 @@ export default function CreateForm() {
   })
   const [guesthouseId, setGuesthouseId] = useState<number>(0)
   const [guesthouseName, setGuesthouseName] = useState('')
-  const [guestName, setGuestName] = useState('')
   const [cleaners, setCleaners] = useState<{ ids: number[]; names: string[] }>({
     ids: [],
     names: [],
