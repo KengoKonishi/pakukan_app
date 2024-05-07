@@ -23,12 +23,12 @@ export default function EditForm() {
       others: string | null
     }[]
   >([])
-  const [guesthouses, setGuesthouses] = useState<{ ids: number[]; names: string[] }>({
+  const [guestHouses, setGuestHouses] = useState<{ ids: number[]; names: string[] }>({
     ids: [],
     names: [],
   })
-  const [guesthouseId, setGuesthouseId] = useState<number>(0)
-  const [guesthouseName, setGuesthouseName] = useState('')
+  const [guestHouseId, setGuestHouseId] = useState<number>(0)
+  const [guestHouseName, setGuestHouseName] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [validationError, setValidationError] = useState('')
@@ -45,6 +45,8 @@ export default function EditForm() {
             `id, guest_houses(id, name), start_datetime, end_datetime, guest_name, numbers_of_guests, amenities_info, bag_recieve_info, others`,
           )
           .eq('id', stayScheduleId)
+          .limit(1)
+          .single()
 
         if (stayError) {
           throw stayError
@@ -52,8 +54,8 @@ export default function EditForm() {
 
         setStaySchedule(stayData)
 
-        setGuesthouseId(stayData[0]?.guest_houses.id)
-        setGuesthouseName(stayData[0]?.guest_houses.name)
+        setGuestHouseId(stayData[0]?.guest_houses.id)
+        setGuestHouseName(stayData[0]?.guest_houses.name)
 
         // 宿泊施設一覧の取得
         const { data: guestHousesData, error: guestHousesError } = await supabase
@@ -65,10 +67,10 @@ export default function EditForm() {
           throw guestHousesError
         }
 
-        const guesthouseIds = guestHousesData.map((item) => item.id)
-        const guesthouseNames = guestHousesData.map((item) => item.name)
+        const guestHouseIds = guestHousesData.map((item) => item.id)
+        const guestHouseNames = guestHousesData.map((item) => item.name)
 
-        setGuesthouses({ ids: guesthouseIds, names: guesthouseNames })
+        setGuestHouses({ ids: guestHouseIds, names: guestHouseNames })
       } catch (error) {
         if (error instanceof Error) {
           setError(error.message)
@@ -81,12 +83,12 @@ export default function EditForm() {
     void fetchData()
   }, [supabase, stayScheduleId])
 
-  const handleGuesthouseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedIndex = guesthouses.names.indexOf(e.target.value)
+  const handleGuestHouseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedIndex = guestHouses.names.indexOf(e.target.value)
     if (selectedIndex !== -1) {
-      const selectedId = guesthouses.ids[selectedIndex]
-      setGuesthouseId(selectedId)
-      setGuesthouseName(e.target.value)
+      const selectedId = guestHouses.ids[selectedIndex]
+      setGuestHouseId(selectedId)
+      setGuestHouseName(e.target.value)
     }
   }
 
@@ -141,7 +143,7 @@ export default function EditForm() {
     try {
       // 更新する宿泊スケジュールデータを準備
       const stayScheduleData = {
-        guest_house_id: guesthouseId,
+        guest_house_id: guestHouseId,
         start_datetime: staySchedule[0].start_datetime,
         end_datetime: staySchedule[0].end_datetime,
         guest_name: staySchedule[0].guest_name,
@@ -232,18 +234,18 @@ export default function EditForm() {
           </div>
         </div>
         <div className='flex flex-col mb-6 max-w-md'>
-          <label htmlFor='guesthouseName' className='mb-4 pl-4 text-gray-700'>
+          <label htmlFor='guestHouseName' className='mb-4 pl-4 text-gray-700'>
             宿泊施設名
           </label>
           <select
-            id='guesthouseName'
-            value={guesthouseName}
-            onChange={handleGuesthouseChange}
+            id='guestHouseName'
+            value={guestHouseName}
+            onChange={handleGuestHouseChange}
             required
             className='px-3 py-3 border rounded-md ring-2 ring-amber-500 ring-offset-0 focus:ring-4 focus:outline-none'
           >
             <option value=''>選択してください</option>
-            {guesthouses.names.map((name, index) => (
+            {guestHouses.names.map((name, index) => (
               <option key={index} value={name}>
                 {name}
               </option>

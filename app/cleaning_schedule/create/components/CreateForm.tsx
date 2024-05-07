@@ -1,30 +1,18 @@
 'use client'
 import React, { useState, useEffect } from 'react'
+import { cleaningSchedule, cleaningStatus } from '@/app/config'
 import { createClient } from '@/utils/supabase/client'
 import SubmitButton from '../../components/SubmitButton'
-
-// 清掃状況ステータス：未完了
-const CLEANING_STATUS_ID_PENDING = 1
-// 清掃員のデフォルト開始時刻(単位：h)
-const GUEST_DEFAULT_CHECK_IN_TIME = 12
-// 清掃員のデフォルト終了時刻(単位：h)
-const GUEST_DEFAULT_CHECK_OUT_TIME = 15
-
-interface GuestHouse {
-  id: number
-  name: string
-}
 
 export default function CreateForm() {
   const [checkInDatetime, setCheckInDatetime] = useState('')
   const [checkOutDatetime, setCheckOutDatetime] = useState('')
-  const [guesthouses, setGuesthouses] = useState<{ ids: number[]; names: string[] }>({
+  const [guestHouses, setGuestHouses] = useState<{ ids: number[]; names: string[] }>({
     ids: [],
     names: [],
   })
-  const [guesthouseId, setGuesthouseId] = useState<number>(0)
-  const [guesthouseName, setGuesthouseName] = useState('')
-  const [guestName, setGuestName] = useState('')
+  const [guestHouseId, setGuestHouseId] = useState<number>(0)
+  const [guestHouseName, setGuestHouseName] = useState('')
   const [cleaners, setCleaners] = useState<{ ids: number[]; names: string[] }>({
     ids: [],
     names: [],
@@ -39,43 +27,59 @@ export default function CreateForm() {
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
-    const initialCheckInDatetimeParam = urlParams.get('startDatetime') || ''
-    const initialCheckOutDatetimeParam = urlParams.get('endDatetime') || ''
-    const addDefaultTimeToDatetime = (datetimeString: string, time: number) => {
+    const initialStartDatetimeParam = urlParams.get('startDatetime') || ''
+    const initialEndDatetimeParam = urlParams.get('endDatetime') || ''
+    // デフォルトの時間設定と整形
+    const addDefaultTimeToDatetimeAndFormatt = (
+      datetimeString: string,
+      time: number | null = null,
+    ) => {
       const datetime = new Date(datetimeString + 'Z')
-      datetime.setUTCHours(time, 0, 0, 0) // time:00(11:00など) を設定
+      if (time) {
+        datetime.setUTCHours(time, 0, 0, 0) // time:00(11:00など) を設定
+      }
       return datetime.toISOString().slice(0, 16) // 'yyyy-mm-ddTHH:MM'
     }
     // デフォルト清掃開始日時を設定
-    const initialCheckInDatetime = initialCheckInDatetimeParam
-      ? addDefaultTimeToDatetime(initialCheckInDatetimeParam, GUEST_DEFAULT_CHECK_IN_TIME)
-      : ''
-    // デフォルト清掃終了日時を設定
-    const initialCheckOutDatetime = initialCheckOutDatetimeParam
-      ? addDefaultTimeToDatetime(
-          initialCheckOutDatetimeParam,
-          GUEST_DEFAULT_CHECK_OUT_TIME,
-        )
-      : ''
+    let initialStartDatetime = ''
+    if (initialStartDatetimeParam && initialStartDatetimeParam.includes(' ')) {
+      initialStartDatetime = addDefaultTimeToDatetimeAndFormatt(initialStartDatetimeParam)
+    } else if (initialStartDatetimeParam) {
+      initialStartDatetime = addDefaultTimeToDatetimeAndFormatt(
+        initialStartDatetimeParam,
+        cleaningSchedule.CLEANING_START_DEFAULT_TIME,
+      )
+    }
 
-    void setCheckInDatetime(initialCheckInDatetime)
-    void setCheckOutDatetime(initialCheckOutDatetime)
+    // デフォルト清掃終了日時を設定
+    let initialEndDatetime = ''
+    if (initialEndDatetimeParam && initialEndDatetimeParam.includes(' ')) {
+      initialEndDatetime = addDefaultTimeToDatetimeAndFormatt(initialEndDatetimeParam)
+    } else if (initialEndDatetimeParam) {
+      initialEndDatetime = addDefaultTimeToDatetimeAndFormatt(
+        initialEndDatetimeParam,
+        cleaningSchedule.CLEANING_END_DEFAULT_TIME,
+      )
+    }
+
+    void setCheckInDatetime(initialStartDatetime)
+    void setCheckOutDatetime(initialEndDatetime)
 
     const fetchGuestHousesAndCleaners = async () => {
       try {
         // 宿泊施設一覧の取得
-        const { data: guesthouseData, error: guesthouseError } = await supabase
+        const { data: guestHouseData, error: guestHouseError } = await supabase
           .from('guest_houses')
           .select(`id, name`)
           .eq('is_deleted', 0)
 
-        if (guesthouseError) {
-          throw guesthouseError
+        if (guestHouseError) {
+          throw guestHouseError
         }
-        const guesthouseIds = guesthouseData.map((item) => item.id)
-        const guesthouseNames = guesthouseData.map((item) => item.name)
+        const guestHouseIds = guestHouseData.map((item) => item.id)
+        const guestHouseNames = guestHouseData.map((item) => item.name)
 
-        setGuesthouses({ ids: guesthouseIds, names: guesthouseNames })
+        setGuestHouses({ ids: guestHouseIds, names: guestHouseNames })
 
         // 清掃員一覧の取得
         const { data: cleanersData, error: cleanersError } = await supabase
@@ -104,12 +108,12 @@ export default function CreateForm() {
   }, [supabase])
 
   //  宿泊施設の値更新
-  const handleGuesthouseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedIndex = guesthouses.names.indexOf(e.target.value)
+  const handleGuestHouseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedIndex = guestHouses.names.indexOf(e.target.value)
     if (selectedIndex !== -1) {
-      const selectedId = guesthouses.ids[selectedIndex]
-      setGuesthouseId(selectedId)
-      setGuesthouseName(e.target.value)
+      const selectedId = guestHouses.ids[selectedIndex]
+      setGuestHouseId(selectedId)
+      setGuestHouseName(e.target.value)
     }
   }
 
@@ -134,10 +138,10 @@ export default function CreateForm() {
       // 更新する清掃員シフトスケジュールデータを準備
       const cleaningScheduleData = {
         cleaner_id: cleanerId !== 0 ? cleanerId : null, //初期設定はnullで設定し、LINEでシフト登録した時にcleaner_idを登録する
-        guest_house_id: guesthouseId,
+        guest_house_id: guestHouseId,
         start_datetime: checkInDatetime,
         end_datetime: checkOutDatetime,
-        cleaning_status_id: CLEANING_STATUS_ID_PENDING,
+        cleaning_status_id: cleaningStatus.STATUS_ID_PENDING,
       }
 
       // 清掃員シフトデータを作成
@@ -213,18 +217,18 @@ export default function CreateForm() {
           </div>
         </div>
         <div className='flex flex-col mb-6 max-w-md'>
-          <label htmlFor='guesthouseName' className='mb-4 pl-4 text-gray-700'>
+          <label htmlFor='guestHouseName' className='mb-4 pl-4 text-gray-700'>
             宿泊施設名
           </label>
           <select
-            id='guesthouseName'
-            value={guesthouseName}
-            onChange={handleGuesthouseChange}
+            id='guestHouseName'
+            value={guestHouseName}
+            onChange={handleGuestHouseChange}
             required
             className='px-3 py-3 border rounded-md ring-2 ring-amber-500 ring-offset-0 focus:ring-4 focus:outline-none'
           >
             <option value=''>選択してください</option>
-            {guesthouses.names.map((name, index) => (
+            {guestHouses.names.map((name, index) => (
               <option key={index} value={name}>
                 {name}
               </option>

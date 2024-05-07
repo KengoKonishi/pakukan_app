@@ -7,29 +7,27 @@ import SubmitButton from './SubmitButton'
 export default function EditForm() {
   const { id } = useParams<{ id: string }>()
   const cleaningScheduleId = parseInt(id)
-  const [cleaningSchedule, setCleaningSchedule] = useState<
-    {
+  const [cleaningSchedule, setCleaningSchedule] = useState<{
+    id: number
+    stay_schedule_id: number
+    start_datetime: string
+    end_datetime: string
+    cleaning_status_id: number
+    guest_houses: {
       id: number
-      stay_schedule_id: number
-      start_datetime: string
-      end_datetime: string
-      cleaning_status_id: number
-      guest_houses: {
-        id: number
-        name: string
-      } | null
-      cleaners: {
-        id: number
-        name: string
-      } | null
-    }[]
-  >([])
-  const [guesthouses, setGuesthouses] = useState<{ ids: number[]; names: string[] }>({
+      name: string
+    } | null
+    cleaners: {
+      id: number
+      name: string
+    } | null
+  }>()
+  const [guestHouses, setGuestHouses] = useState<{ ids: number[]; names: string[] }>({
     ids: [],
     names: [],
   })
-  const [guesthouseId, setGuesthouseId] = useState<number>(0)
-  const [guesthouseName, setGuesthouseName] = useState('')
+  const [guestHouseId, setGuestHouseId] = useState<number>(0)
+  const [guestHouseName, setGuestHouseName] = useState('')
   const [cleaners, setCleaners] = useState<{ ids: number[]; names: string[] }>({
     ids: [],
     names: [],
@@ -52,6 +50,8 @@ export default function EditForm() {
             `id, stay_schedule_id, start_datetime, end_datetime, cleaning_status_id, guest_houses(id, name), cleaners(id, name)`,
           )
           .eq('id', cleaningScheduleId)
+          .limit(1)
+          .single()
 
         if (cleaningError) {
           throw cleaningError
@@ -62,8 +62,8 @@ export default function EditForm() {
           setCleaningSchedule(cleaningData[0])
         }
 
-        setGuesthouseId(cleaningData[0].guest_houses.id)
-        setGuesthouseName(cleaningData[0].guest_houses.name)
+        setGuestHouseId(cleaningData[0].guest_houses.id)
+        setGuestHouseName(cleaningData[0].guest_houses.name)
 
         setCleanerId(cleaningData[0].cleaners?.id)
         setCleanerName(cleaningData[0].cleaners?.name)
@@ -78,10 +78,10 @@ export default function EditForm() {
           throw guestHousesError
         }
 
-        const guesthouseIds = guestHousesData.map((item) => item.id)
-        const guesthouseNames = guestHousesData.map((item) => item.name)
+        const guestHouseIds = guestHousesData.map((item) => item.id)
+        const guestHouseNames = guestHousesData.map((item) => item.name)
 
-        setGuesthouses({ ids: guesthouseIds, names: guesthouseNames })
+        setGuestHouses({ ids: guestHouseIds, names: guestHouseNames })
 
         // 清掃員一覧の取得
         const { data: cleanersData, error: cleanersError } = await supabase
@@ -109,12 +109,12 @@ export default function EditForm() {
     void fetchData()
   }, [supabase, cleaningScheduleId])
 
-  const handleGuesthouseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedIndex = guesthouses.names.indexOf(e.target.value)
+  const handleGuestHouseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedIndex = guestHouses.names.indexOf(e.target.value)
     if (selectedIndex !== -1) {
-      const selectedId = guesthouses.ids[selectedIndex]
-      setGuesthouseId(selectedId)
-      setGuesthouseName(e.target.value)
+      const selectedId = guestHouses.ids[selectedIndex]
+      setGuestHouseId(selectedId)
+      setGuestHouseName(e.target.value)
       setCleaningSchedule((prevSchedule) => ({
         ...prevSchedule,
         guest_house_id: selectedId,
@@ -147,7 +147,7 @@ export default function EditForm() {
       const cleaningScheduleData = {
         id: cleaningScheduleId,
         cleaner_id: cleanerId ?? null, //初期設定はnullで設定し、LINEでシフト登録した時にcleaner_idを登録する
-        guest_house_id: guesthouseId,
+        guest_house_id: guestHouseId,
         stay_schedule_id: cleaningSchedule.stay_schedule_id,
         start_datetime: cleaningSchedule.start_datetime,
         end_datetime: cleaningSchedule.end_datetime,
@@ -236,18 +236,18 @@ export default function EditForm() {
           </div>
         </div>
         <div className='flex flex-col mb-6 max-w-md'>
-          <label htmlFor='guesthouseName' className='mb-4 pl-4 text-gray-700'>
+          <label htmlFor='guestHouseName' className='mb-4 pl-4 text-gray-700'>
             宿泊施設名
           </label>
           <select
-            id='guesthouseName'
-            value={guesthouseName}
-            onChange={handleGuesthouseChange}
+            id='guestHouseName'
+            value={guestHouseName}
+            onChange={handleGuestHouseChange}
             required
             className='px-3 py-3 border rounded-md ring-2 ring-amber-500 ring-offset-0 focus:ring-4 focus:outline-none'
           >
             <option value=''>選択してください</option>
-            {guesthouses.names.map((name, index) => (
+            {guestHouses.names.map((name, index) => (
               <option key={index} value={name}>
                 {name}
               </option>

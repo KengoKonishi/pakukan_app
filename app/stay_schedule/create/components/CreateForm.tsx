@@ -1,42 +1,34 @@
 'use client'
 import React, { useState, useEffect } from 'react'
+import { staySchedule, cleaningSchedule, cleaningStatus } from '@/app/config'
 import { createClient } from '@/utils/supabase/client'
 import SubmitButton from '../../components/SubmitButton'
 
-// 基準となる時刻に引数で指定した時刻を足す
-const addHoursToDatetime = (datetimeString: string, hours: number) => {
+// 基準となる時刻に引数で指定した時刻を足す+日時の整形
+const addHoursAndFormattDatetime = (
+  datetimeString: string,
+  hours: number | null = null,
+) => {
   const datetime = new Date(datetimeString)
   const timezoneOffset = datetime.getTimezoneOffset() // 現地時間からのオフセットを取得する
-  const millisecondsToAdd = hours * 60 * 60 * 1000 // 指定された時間をミリ秒に変換する
+  let millisecondsToAdd = 0
+  if (hours) {
+    millisecondsToAdd = hours * 60 * 60 * 1000 // 指定された時間をミリ秒に変換する
+  }
   const adjustedTime = datetime.getTime() + millisecondsToAdd - timezoneOffset * 60 * 1000 // ローカル時間に変換する
   const result = new Date(adjustedTime)
   return result.toISOString().slice(0, 16) // 'yyyy-mm-ddTHH:MM'
-}
-// 清掃状況ステータス：未完了
-const CLEANING_STATUS_ID_PENDING = 1
-// チェックアウト時刻の一定時間経過後を清掃開始時刻とする（単位：h）
-const SETTING_TIME_FOR_CLEANING_START_DATETIME = 2
-// 清掃員の清掃時間(単位：h)
-const CLEANING_TIME = 3
-// 宿泊者のデフォルトチェックイン時刻(単位：h)
-const GUEST_DEFAULT_CHECK_IN_TIME = 15
-// 宿泊者のデフォルトチェックアウト時刻(単位：h)
-const GUEST_DEFAULT_CHECK_OUT_TIME = 11
-
-interface GuestHouse {
-  id: number
-  name: string
 }
 
 export default function CreateForm() {
   const [checkInDatetime, setCheckInDatetime] = useState('')
   const [checkOutDatetime, setCheckOutDatetime] = useState('')
-  const [guesthouses, setGuesthouses] = useState<{ ids: number[]; names: string[] }>({
+  const [guestHouses, setGuestHouses] = useState<{ ids: number[]; names: string[] }>({
     ids: [],
     names: [],
   })
-  const [guesthouseId, setGuesthouseId] = useState<number>(0)
-  const [guesthouseName, setGuesthouseName] = useState('')
+  const [guestHouseId, setGuestHouseId] = useState<number>(0)
+  const [guestHouseName, setGuestHouseName] = useState('')
   const [guestName, setGuestName] = useState('')
   const [numbersOfGuests, setNumbersOfGuests] = useState('')
   const [amenitiesInfo, setAmenitiesInfo] = useState('')
@@ -58,16 +50,30 @@ export default function CreateForm() {
       return datetime.toISOString().slice(0, 16) // 'yyyy-mm-ddTHH:MM'
     }
     // チェックイン日時を設定
-    const initialCheckInDatetime = initialCheckInDatetimeParam
-      ? addDefaultTimeToDatetime(initialCheckInDatetimeParam, GUEST_DEFAULT_CHECK_IN_TIME)
-      : ''
-    // チェックイン日時を設定
-    const initialCheckOutDatetime = initialCheckOutDatetimeParam
-      ? addDefaultTimeToDatetime(
-          initialCheckOutDatetimeParam,
-          GUEST_DEFAULT_CHECK_OUT_TIME,
-        )
-      : ''
+    let initialCheckInDatetime = ''
+    if (initialCheckInDatetimeParam && initialCheckInDatetimeParam.includes(' ')) {
+      // 「2024/5/7 6:00:00」のような「日付＋時刻」で渡される場合
+      initialCheckInDatetime = addHoursAndFormattDatetime(initialCheckInDatetimeParam)
+    } else if (initialCheckInDatetimeParam) {
+      // 「2024/5/7」のような「日付」で渡される場合、デフォルトの時刻を設定
+      initialCheckInDatetime = addDefaultTimeToDatetime(
+        initialCheckInDatetimeParam,
+        staySchedule.GUEST_DEFAULT_CHECK_IN_TIME,
+      )
+    }
+
+    // チェックアウト日時を設定
+    let initialCheckOutDatetime = ''
+    if (initialCheckOutDatetimeParam && initialCheckOutDatetimeParam.includes(' ')) {
+      // 「2024/5/7 6:00:00」のような「日付＋時刻」で渡される場合
+      initialCheckOutDatetime = addHoursAndFormattDatetime(initialCheckOutDatetimeParam)
+    } else if (initialCheckOutDatetimeParam) {
+      // 「2024/5/7」のような「日付」で渡される場合、デフォルトの時刻を設定
+      initialCheckOutDatetime = addDefaultTimeToDatetime(
+        initialCheckInDatetimeParam,
+        staySchedule.GUEST_DEFAULT_CHECK_OUT_TIME,
+      )
+    }
 
     void setCheckInDatetime(initialCheckInDatetime)
     void setCheckOutDatetime(initialCheckOutDatetime)
@@ -81,10 +87,10 @@ export default function CreateForm() {
         if (error) {
           throw error
         }
-        const guesthouseIds = data.map((item) => item.id)
-        const guesthouseNames = data.map((item) => item.name)
+        const guestHouseIds = data.map((item) => item.id)
+        const guestHouseNames = data.map((item) => item.name)
 
-        setGuesthouses({ ids: guesthouseIds, names: guesthouseNames })
+        setGuestHouses({ ids: guestHouseIds, names: guestHouseNames })
       } catch (e: unknown) {
         if (e instanceof Error) {
           setError(e.message)
@@ -97,13 +103,13 @@ export default function CreateForm() {
     void fetchGuestHouses()
   }, [supabase])
 
-  const handleGuesthouseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedIndex = guesthouses.names.indexOf(e.target.value)
+  const handleGuestHouseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedIndex = guestHouses.names.indexOf(e.target.value)
     if (selectedIndex !== -1) {
-      const selectedId = guesthouses.ids[selectedIndex]
+      const selectedId = guestHouses.ids[selectedIndex]
       // console.log('選択されたゲストハウスのID:', selectedId)
-      setGuesthouseId(selectedId)
-      setGuesthouseName(e.target.value)
+      setGuestHouseId(selectedId)
+      setGuestHouseName(e.target.value)
     }
   }
 
@@ -153,7 +159,7 @@ export default function CreateForm() {
     try {
       // 更新する宿泊スケジュールデータを準備
       const stayScheduleData = {
-        guest_house_id: guesthouseId,
+        guest_house_id: guestHouseId,
         start_datetime: checkInDatetime,
         end_datetime: checkOutDatetime,
         guest_name: guestName,
@@ -164,17 +170,20 @@ export default function CreateForm() {
       }
 
       // 更新する清掃員シフトスケジュールデータを準備
-      const cleaningStartDatetime = addHoursToDatetime(
+      const cleaningStartDatetime = addHoursAndFormattDatetime(
         checkOutDatetime,
-        SETTING_TIME_FOR_CLEANING_START_DATETIME,
+        cleaningSchedule.SETTING_TIME_FOR_CLEANING_START_DATETIME,
       )
-      const cleaningEndDatetime = addHoursToDatetime(cleaningStartDatetime, CLEANING_TIME)
+      const cleaningEndDatetime = addHoursAndFormattDatetime(
+        cleaningStartDatetime,
+        cleaningSchedule.CLEANING_TIME,
+      )
       const cleaningScheduleData = {
         cleaner_id: null, //初期設定はnullで設定し、LINEでシフト登録した時にcleaner_idを登録する
-        guest_house_id: guesthouseId,
+        guest_house_id: guestHouseId,
         start_datetime: cleaningStartDatetime,
         end_datetime: cleaningEndDatetime,
-        cleaning_status_id: CLEANING_STATUS_ID_PENDING,
+        cleaning_status_id: cleaningStatus.STATUS_ID_PENDING,
       }
 
       // 宿泊スケジュールと清掃員シフトデータの両方を作成。
@@ -182,6 +191,7 @@ export default function CreateForm() {
       const { error } = await supabase.rpc('createStayAndCleaningSchedules', {
         stay_schedule_data: stayScheduleData,
         cleaning_schedule_data: cleaningScheduleData,
+        ß,
       })
 
       if (error) {
@@ -253,18 +263,18 @@ export default function CreateForm() {
           </div>
         </div>
         <div className='flex flex-col mb-6 max-w-md'>
-          <label htmlFor='guesthouseName' className='mb-4 pl-4 text-gray-700'>
+          <label htmlFor='guestHouseName' className='mb-4 pl-4 text-gray-700'>
             宿泊施設名
           </label>
           <select
-            id='guesthouseName'
-            value={guesthouseName}
-            onChange={handleGuesthouseChange}
+            id='guestHouseName'
+            value={guestHouseName}
+            onChange={handleGuestHouseChange}
             required
             className='px-3 py-3 border rounded-md ring-2 ring-amber-500 ring-offset-0 focus:ring-4 focus:outline-none'
           >
             <option value=''>選択してください</option>
-            {guesthouses.names.map((name, index) => (
+            {guestHouses.names.map((name, index) => (
               <option key={index} value={name}>
                 {name}
               </option>
