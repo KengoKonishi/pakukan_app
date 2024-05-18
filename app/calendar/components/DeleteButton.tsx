@@ -2,9 +2,13 @@ import React, { useState } from 'react'
 
 interface DeleteButtonProps {
   onConfirmDelete: () => Promise<void>
+  isStayScheduleFlg?: boolean
 }
 
-const DeleteButton: React.FC<DeleteButtonProps> = ({ onConfirmDelete }) => {
+const DeleteButton: React.FC<DeleteButtonProps> = ({
+  onConfirmDelete,
+  isStayScheduleFlg = false,
+}) => {
   const [showConfirmation, setShowConfirmation] = useState(false)
 
   const handleDeleteClick = () => {
@@ -31,7 +35,12 @@ const DeleteButton: React.FC<DeleteButtonProps> = ({ onConfirmDelete }) => {
       {showConfirmation && (
         <div className='fixed top-0 left-0 w-full h-full flex justify-center items-center bg-black bg-opacity-50'>
           <div className='bg-white p-8 rounded-md shadow-md'>
-            <p className='mb-4'>本当に削除しますか？</p>
+            <p className='mb-4'>
+              本当に削除しますか？<br></br>
+              {isStayScheduleFlg
+                ? '※紐づく清掃シフトがある場合、同時に削除されます。'
+                : ''}
+            </p>
             <div className='flex justify-center'>
               <button
                 // eslint-disable-next-line @typescript-eslint/no-misused-promises

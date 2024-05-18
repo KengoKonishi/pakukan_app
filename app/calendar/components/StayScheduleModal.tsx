@@ -23,12 +23,10 @@ export const StayScheduleModal = ({
   stayScheduleID,
   onClose,
   onScheduleDeleted,
-  failedScheduleDelete,
 }: {
   stayScheduleID: number
   onClose: () => void
   onScheduleDeleted: () => void
-  failedScheduleDelete: () => void
 }) => {
   const [staySchedule, setStaySchedule] = useState<StaySchedule | null>(null)
   const supabase = createClient()
@@ -56,14 +54,24 @@ export const StayScheduleModal = ({
   // レコード削除
   const handleDelete = async (id: number): Promise<void> => {
     try {
-      const { error } = await supabase.from('stay_schedules').delete().match({ id })
-      if (error) {
-        if (error.code === '23503') {
-          failedScheduleDelete()
-          // モーダルを閉じる
-          onClose()
-        }
-        throw error
+      // TODO:トランザクション制御が必要なので、supabase database functionsで後追い設定必要
+      // 宿泊スケジュールに紐づく清掃シフトスケジュールの削除
+      const { error: cleaningScheduleError } = await supabase
+        .from('cleaning_schedules')
+        .delete()
+        .eq('stay_schedule_id', id)
+
+      if (cleaningScheduleError) {
+        throw cleaningScheduleError
+      }
+
+      // 宿泊スケジュールの削除
+      const { error: stayScheduleError } = await supabase
+        .from('stay_schedules')
+        .delete()
+        .match({ id })
+      if (stayScheduleError) {
+        throw stayScheduleError
       }
 
       // すべての更新処理が成功した場合の処理
@@ -111,7 +119,10 @@ export const StayScheduleModal = ({
               <Link href={`/stay_schedule/edit/${staySchedule.id}`}>
                 <button className='py-2 px-4 rounded-md no-underline'>編集</button>
               </Link>
-              <DeleteButton onConfirmDelete={() => handleDelete(staySchedule.id)} />
+              <DeleteButton
+                onConfirmDelete={() => handleDelete(staySchedule.id)}
+                isStayScheduleFlg={true}
+              />
             </div>
             <div className='flex gap-20 p-5'>
               <div>

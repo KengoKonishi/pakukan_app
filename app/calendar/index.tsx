@@ -123,13 +123,6 @@ const AdminCalendar = () => {
     setSuccessMessage('削除が成功しました')
   }
 
-  // 宿泊スケジュール削除後の処理
-  const failedScheduleDelete = () => {
-    setValidationError(
-      '清掃員シフト情報が紐づいているので、先に清掃員シフト情報を削除してください。',
-    )
-  }
-
   return (
     <div className='w-full'>
       {successMessage && (
@@ -154,7 +147,6 @@ const AdminCalendar = () => {
           stayScheduleID={modalState.scheduleId}
           onClose={handleModalClose}
           onScheduleDeleted={handleScheduleDeleted}
-          failedScheduleDelete={failedScheduleDelete}
         />
       )}
       {modalState.name === MODAL_NAMES.CLEANING_SCHEDULE &&
