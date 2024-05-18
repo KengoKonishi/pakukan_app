@@ -66,7 +66,7 @@ export default function CreateForm() {
     } else if (initialCheckOutDatetimeParam) {
       // 「2024/5/7」のような「日付」で渡される場合、デフォルトの時刻を設定
       initialCheckOutDatetime = addDefaultTimeToDatetime(
-        initialCheckInDatetimeParam,
+        initialCheckOutDatetimeParam,
         staySchedule.GUEST_DEFAULT_CHECK_OUT_TIME,
       )
     }

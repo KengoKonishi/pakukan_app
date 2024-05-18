@@ -55,14 +55,33 @@ export const StayScheduleModal = ({
   const handleDelete = async (id: number): Promise<void> => {
     try {
       // TODO:トランザクション制御が必要なので、supabase database functionsで後追い設定必要
-      // 宿泊スケジュールに紐づく清掃シフトスケジュールの削除
-      const { error: cleaningScheduleError } = await supabase
+      // 宿泊スケジュールに紐づく清掃シフトスケジュールの有無確認
+      const { data: cleaningScheduleData } = await supabase
         .from('cleaning_schedules')
-        .delete()
+        .select('id')
         .eq('stay_schedule_id', id)
+        .single()
 
-      if (cleaningScheduleError) {
-        throw cleaningScheduleError
+      if (cleaningScheduleData) {
+        // 該当の清掃スケジュールがある場合のみ清掃報告および清掃シフトスケジュールの削除を実施
+        // 清掃員シフトスケジュールに紐づく清掃報告の削除
+        const { error: cleaningReportsError } = await supabase
+          .from('cleaning_reports')
+          .delete()
+          .eq('cleaning_schedule_id', cleaningScheduleData.id)
+        if (cleaningReportsError) {
+          throw cleaningReportsError
+        }
+
+        // 宿泊スケジュールに紐づく清掃シフトスケジュールの削除
+        const { error: cleaningScheduleError } = await supabase
+          .from('cleaning_schedules')
+          .delete()
+          .eq('stay_schedule_id', id)
+
+        if (cleaningScheduleError) {
+          throw cleaningScheduleError
+        }
       }
 
       // 宿泊スケジュールの削除
