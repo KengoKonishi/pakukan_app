@@ -7,28 +7,29 @@ import SubmitButton from '../../../components/SubmitButton'
 export default function EditForm() {
   const { id } = useParams<{ id: string }>()
   const stayScheduleId = parseInt(id)
-  const [staySchedule, setStaySchedule] = useState<
-    {
-      id: number
-      guest_houses: {
-        id: number
-        name: string
-      } | null
-      start_datetime: string
-      end_datetime: string
-      guest_name: string
-      numbers_of_guests: string
-      amenities_info: string | null
-      bag_recieve_info: string | null
-      others: string | null
-    }[]
-  >([])
-  const [guestHouses, setGuestHouses] = useState<{ ids: number[]; names: string[] }>({
-    ids: [],
-    names: [],
+  const [staySchedule, setStaySchedule] = useState<{
+    id: number
+    guest_house_id: number | null
+    start_datetime: string
+    end_datetime: string
+    guest_name: string
+    numbers_of_guests: string
+    amenities_info: string | null
+    bag_recieve_info: string | null
+    others: string | null
+  }>({
+    id: 0,
+    guest_house_id: null,
+    start_datetime: '',
+    end_datetime: '',
+    guest_name: '',
+    numbers_of_guests: '',
+    amenities_info: null,
+    bag_recieve_info: null,
+    others: null,
   })
-  const [guestHouseId, setGuestHouseId] = useState<number>(0)
-  const [guestHouseName, setGuestHouseName] = useState('')
+  const [guestHouses, setGuestHouses] = useState<{ [key: number]: string }>({})
+  const [selectedGuestHouseId, setSelectedGuestHouseId] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [validationError, setValidationError] = useState('')
@@ -42,7 +43,7 @@ export default function EditForm() {
         const { data: stayData, error: stayError } = await supabase
           .from('stay_schedules')
           .select(
-            `id, guest_houses(id, name), start_datetime, end_datetime, guest_name, numbers_of_guests, amenities_info, bag_recieve_info, others`,
+            `id, guest_house_id, start_datetime, end_datetime, guest_name, numbers_of_guests, amenities_info, bag_recieve_info, others`,
           )
           .eq('id', stayScheduleId)
           .limit(1)
@@ -53,9 +54,7 @@ export default function EditForm() {
         }
 
         setStaySchedule(stayData)
-
-        setGuestHouseId(stayData[0]?.guest_houses.id)
-        setGuestHouseName(stayData[0]?.guest_houses.name)
+        setSelectedGuestHouseId(stayData.guest_house_id)
 
         // 宿泊施設一覧の取得
         const { data: guestHousesData, error: guestHousesError } = await supabase
@@ -67,10 +66,11 @@ export default function EditForm() {
           throw guestHousesError
         }
 
-        const guestHouseIds = guestHousesData.map((item) => item.id)
-        const guestHouseNames = guestHousesData.map((item) => item.name)
-
-        setGuestHouses({ ids: guestHouseIds, names: guestHouseNames })
+        const guestHousesMap: { [key: number]: string } = {}
+        guestHousesData.forEach((item) => {
+          guestHousesMap[item.id] = item.name
+        })
+        setGuestHouses(guestHousesMap)
       } catch (error) {
         if (error instanceof Error) {
           setError(error.message)
@@ -84,12 +84,8 @@ export default function EditForm() {
   }, [supabase, stayScheduleId])
 
   const handleGuestHouseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedIndex = guestHouses.names.indexOf(e.target.value)
-    if (selectedIndex !== -1) {
-      const selectedId = guestHouses.ids[selectedIndex]
-      setGuestHouseId(selectedId)
-      setGuestHouseName(e.target.value)
-    }
+    const selectedId = parseInt(e.target.value)
+    setSelectedGuestHouseId(selectedId)
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
@@ -100,11 +96,14 @@ export default function EditForm() {
     setSuccessMessage('')
 
     // 宿泊者名,アメニティ類の情報,荷物の事前/事後預かり情報,その他のバリデーション
+    if (!staySchedule) {
+      return
+    }
     const prohibitedItems = [
-      staySchedule[0].guest_name,
-      staySchedule[0].amenities_info,
-      staySchedule[0].bag_recieve_info,
-      staySchedule[0].others,
+      staySchedule.guest_name,
+      staySchedule.amenities_info,
+      staySchedule.bag_recieve_info,
+      staySchedule.others,
     ]
     const targetItems = [
       '宿泊者名',
@@ -117,6 +116,13 @@ export default function EditForm() {
       const item = prohibitedItems[i]
       const targetItem = targetItems[i]
       const maxStringLength = 255
+
+      if (staySchedule.end_datetime < staySchedule.start_datetime) {
+        setValidationError(
+          'チェックアウト日時はチェックイン日時よりも後の日時を設定してください。',
+        )
+        return
+      }
 
       // 文字数のチェック
       if (item !== null && item.length > maxStringLength) {
@@ -135,7 +141,7 @@ export default function EditForm() {
 
     // 宿泊人数のバリデーション
     const prohibitedNumbersOfGuestsPattern = /[^0-9]/
-    if (prohibitedNumbersOfGuestsPattern.test(staySchedule[0].numbers_of_guests)) {
+    if (prohibitedNumbersOfGuestsPattern.test(staySchedule.numbers_of_guests)) {
       setValidationError('宿泊人数に数字以外の文字が使用されています。')
       return
     }
@@ -143,14 +149,14 @@ export default function EditForm() {
     try {
       // 更新する宿泊スケジュールデータを準備
       const stayScheduleData = {
-        guest_house_id: guestHouseId,
-        start_datetime: staySchedule[0].start_datetime,
-        end_datetime: staySchedule[0].end_datetime,
-        guest_name: staySchedule[0].guest_name,
-        numbers_of_guests: staySchedule[0].numbers_of_guests,
-        amenities_info: staySchedule[0].amenities_info,
-        bag_recieve_info: staySchedule[0].bag_recieve_info,
-        others: staySchedule[0].others,
+        guest_house_id: selectedGuestHouseId!,
+        start_datetime: staySchedule.start_datetime,
+        end_datetime: staySchedule.end_datetime,
+        guest_name: staySchedule.guest_name,
+        numbers_of_guests: staySchedule.numbers_of_guests,
+        amenities_info: staySchedule.amenities_info,
+        bag_recieve_info: staySchedule.bag_recieve_info,
+        others: staySchedule.others,
       }
 
       const createStaySchedule = await supabase
@@ -209,10 +215,10 @@ export default function EditForm() {
             <input
               type='datetime-local'
               id='checkInDatetime'
-              value={staySchedule[0].start_datetime ?? ''}
+              value={staySchedule?.start_datetime ?? ''}
               onChange={(e) => {
-                const updatedStaySchedule = [...staySchedule]
-                updatedStaySchedule[0].start_datetime = e.target.value
+                const updatedStaySchedule = { ...staySchedule }
+                updatedStaySchedule.start_datetime = e.target.value
                 setStaySchedule(updatedStaySchedule)
               }}
               required
@@ -222,10 +228,10 @@ export default function EditForm() {
             <input
               type='datetime-local'
               id='checkOutDatetime'
-              value={staySchedule[0].end_datetime ?? ''}
+              value={staySchedule?.end_datetime ?? ''}
               onChange={(e) => {
-                const updatedStaySchedule = [...staySchedule]
-                updatedStaySchedule[0].end_datetime = e.target.value
+                const updatedStaySchedule = { ...staySchedule }
+                updatedStaySchedule.end_datetime = e.target.value
                 setStaySchedule(updatedStaySchedule)
               }}
               required
@@ -238,15 +244,15 @@ export default function EditForm() {
             宿泊施設名
           </label>
           <select
-            id='guestHouseName'
-            value={guestHouseName}
+            id='guestHouseId'
+            value={selectedGuestHouseId || ''}
             onChange={handleGuestHouseChange}
             required
             className='px-3 py-3 border rounded-md ring-2 ring-amber-500 ring-offset-0 focus:ring-4 focus:outline-none'
           >
             <option value=''>選択してください</option>
-            {guestHouses.names.map((name, index) => (
-              <option key={index} value={name}>
+            {Object.entries(guestHouses).map(([id, name]) => (
+              <option key={id} value={id}>
                 {name}
               </option>
             ))}
@@ -259,10 +265,10 @@ export default function EditForm() {
           <input
             type='text'
             id='guestName'
-            value={staySchedule[0].guest_name ?? ''}
+            value={staySchedule?.guest_name ?? ''}
             onChange={(e) => {
-              const updatedStaySchedule = [...staySchedule]
-              updatedStaySchedule[0].guest_name = e.target.value
+              const updatedStaySchedule = { ...staySchedule }
+              updatedStaySchedule.guest_name = e.target.value
               setStaySchedule(updatedStaySchedule)
             }}
             required
@@ -277,10 +283,10 @@ export default function EditForm() {
             <input
               type='number'
               id='numbersOfGuests'
-              value={staySchedule[0].numbers_of_guests ?? ''}
+              value={staySchedule?.numbers_of_guests ?? ''}
               onChange={(e) => {
-                const updatedStaySchedule = [...staySchedule]
-                updatedStaySchedule[0].numbers_of_guests = e.target.value
+                const updatedStaySchedule = { ...staySchedule }
+                updatedStaySchedule.numbers_of_guests = e.target.value
                 setStaySchedule(updatedStaySchedule)
               }}
               required
@@ -297,10 +303,10 @@ export default function EditForm() {
           </label>
           <textarea
             id='amenitiesInfo'
-            value={staySchedule[0].amenities_info ?? ''}
+            value={staySchedule?.amenities_info ?? ''}
             onChange={(e) => {
-              const updatedStaySchedule = [...staySchedule]
-              updatedStaySchedule[0].amenities_info = e.target.value
+              const updatedStaySchedule = { ...staySchedule }
+              updatedStaySchedule.amenities_info = e.target.value
               setStaySchedule(updatedStaySchedule)
             }}
             className='px-3 py-3 border rounded-md ring-2 ring-amber-500 ring-offset-0 focus:ring-4 focus:outline-none'
@@ -312,10 +318,10 @@ export default function EditForm() {
           </label>
           <textarea
             id='bagRecieveInfo'
-            value={staySchedule[0].bag_recieve_info ?? ''}
+            value={staySchedule?.bag_recieve_info ?? ''}
             onChange={(e) => {
-              const updatedStaySchedule = [...staySchedule]
-              updatedStaySchedule[0].bag_recieve_info = e.target.value
+              const updatedStaySchedule = { ...staySchedule }
+              updatedStaySchedule.bag_recieve_info = e.target.value
               setStaySchedule(updatedStaySchedule)
             }}
             className='px-3 py-3 border rounded-md ring-2 ring-amber-500 ring-offset-0 focus:ring-4 focus:outline-none'
@@ -327,10 +333,10 @@ export default function EditForm() {
           </label>
           <textarea
             id='others'
-            value={staySchedule[0].others ?? ''}
+            value={staySchedule?.others ?? ''}
             onChange={(e) => {
-              const updatedStaySchedule = [...staySchedule]
-              updatedStaySchedule[0].others = e.target.value
+              const updatedStaySchedule = { ...staySchedule }
+              updatedStaySchedule.others = e.target.value
               setStaySchedule(updatedStaySchedule)
             }}
             className='px-3 py-3 border rounded-md ring-2 ring-amber-500 ring-offset-0 focus:ring-4 focus:outline-none'

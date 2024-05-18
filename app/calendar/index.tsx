@@ -26,6 +26,7 @@ const AdminCalendar = () => {
     scheduleId: 0,
   })
   const [successMessage, setSuccessMessage] = useState('')
+  const [validationError, setValidationError] = useState('')
 
   useEffect(() => {
     // チェックがついた民泊施設に紐づくスケジュールを取得
@@ -122,11 +123,23 @@ const AdminCalendar = () => {
     setSuccessMessage('削除が成功しました')
   }
 
+  // 宿泊スケジュール削除後の処理
+  const failedScheduleDelete = () => {
+    setValidationError(
+      '清掃員シフト情報が紐づいているので、先に清掃員シフト情報を削除してください。',
+    )
+  }
+
   return (
     <div className='w-full'>
       {successMessage && (
         <div className='text-blue-500 px-4 py-2 bg-yellow-200 rounded-md font-bold w-8/12 mb-4'>
           {successMessage}
+        </div>
+      )}
+      {validationError && (
+        <div className='text-red-500 px-4 py-2 bg-yellow-200 rounded-md font-bold'>
+          {validationError}
         </div>
       )}
       {modalState.name === MODAL_NAMES.CREATE_SCHEDULE && (
@@ -141,6 +154,7 @@ const AdminCalendar = () => {
           stayScheduleID={modalState.scheduleId}
           onClose={handleModalClose}
           onScheduleDeleted={handleScheduleDeleted}
+          failedScheduleDelete={failedScheduleDelete}
         />
       )}
       {modalState.name === MODAL_NAMES.CLEANING_SCHEDULE &&

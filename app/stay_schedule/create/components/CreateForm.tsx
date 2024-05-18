@@ -23,12 +23,8 @@ const addHoursAndFormattDatetime = (
 export default function CreateForm() {
   const [checkInDatetime, setCheckInDatetime] = useState('')
   const [checkOutDatetime, setCheckOutDatetime] = useState('')
-  const [guestHouses, setGuestHouses] = useState<{ ids: number[]; names: string[] }>({
-    ids: [],
-    names: [],
-  })
-  const [guestHouseId, setGuestHouseId] = useState<number>(0)
-  const [guestHouseName, setGuestHouseName] = useState('')
+  const [guestHouses, setGuestHouses] = useState<{ [key: number]: string }>({})
+  const [selectedGuestHouseId, setSelectedGuestHouseId] = useState<number | null>(null)
   const [guestName, setGuestName] = useState('')
   const [numbersOfGuests, setNumbersOfGuests] = useState('')
   const [amenitiesInfo, setAmenitiesInfo] = useState('')
@@ -84,13 +80,15 @@ export default function CreateForm() {
           .from('guest_houses')
           .select(`id, name`)
           .eq('is_deleted', 0)
+
         if (error) {
           throw error
         }
-        const guestHouseIds = data.map((item) => item.id)
-        const guestHouseNames = data.map((item) => item.name)
-
-        setGuestHouses({ ids: guestHouseIds, names: guestHouseNames })
+        const guestHousesMap: { [key: number]: string } = {}
+        data.forEach((item) => {
+          guestHousesMap[item.id] = item.name
+        })
+        setGuestHouses(guestHousesMap)
       } catch (e: unknown) {
         if (e instanceof Error) {
           setError(e.message)
@@ -104,13 +102,8 @@ export default function CreateForm() {
   }, [supabase])
 
   const handleGuestHouseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedIndex = guestHouses.names.indexOf(e.target.value)
-    if (selectedIndex !== -1) {
-      const selectedId = guestHouses.ids[selectedIndex]
-      // console.log('選択されたゲストハウスのID:', selectedId)
-      setGuestHouseId(selectedId)
-      setGuestHouseName(e.target.value)
-    }
+    const selectedId = parseInt(e.target.value)
+    setSelectedGuestHouseId(selectedId)
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
@@ -133,6 +126,13 @@ export default function CreateForm() {
       const item = prohibitedItems[i]
       const targetItem = targetItems[i]
       const maxStringLength = 255
+
+      if (checkOutDatetime < checkInDatetime) {
+        setValidationError(
+          'チェックアウト日時はチェックイン日時よりも後の日時を設定してください。',
+        )
+        return
+      }
 
       // 文字数のチェック
       if (item.length > maxStringLength) {
@@ -159,7 +159,7 @@ export default function CreateForm() {
     try {
       // 更新する宿泊スケジュールデータを準備
       const stayScheduleData = {
-        guest_house_id: guestHouseId,
+        guest_house_id: selectedGuestHouseId!,
         start_datetime: checkInDatetime,
         end_datetime: checkOutDatetime,
         guest_name: guestName,
@@ -180,7 +180,7 @@ export default function CreateForm() {
       )
       const cleaningScheduleData = {
         cleaner_id: null, //初期設定はnullで設定し、LINEでシフト登録した時にcleaner_idを登録する
-        guest_house_id: guestHouseId,
+        guest_house_id: selectedGuestHouseId!,
         start_datetime: cleaningStartDatetime,
         end_datetime: cleaningEndDatetime,
         cleaning_status_id: cleaningStatus.STATUS_ID_PENDING,
@@ -191,7 +191,6 @@ export default function CreateForm() {
       const { error } = await supabase.rpc('createStayAndCleaningSchedules', {
         stay_schedule_data: stayScheduleData,
         cleaning_schedule_data: cleaningScheduleData,
-        ß,
       })
 
       if (error) {
@@ -267,15 +266,15 @@ export default function CreateForm() {
             宿泊施設名
           </label>
           <select
-            id='guestHouseName'
-            value={guestHouseName}
+            id='guestHouseId'
+            value={selectedGuestHouseId || ''}
             onChange={handleGuestHouseChange}
             required
             className='px-3 py-3 border rounded-md ring-2 ring-amber-500 ring-offset-0 focus:ring-4 focus:outline-none'
           >
             <option value=''>選択してください</option>
-            {guestHouses.names.map((name, index) => (
-              <option key={index} value={name}>
+            {Object.entries(guestHouses).map(([id, name]) => (
+              <option key={id} value={id}>
                 {name}
               </option>
             ))}

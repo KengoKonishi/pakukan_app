@@ -23,10 +23,12 @@ export const StayScheduleModal = ({
   stayScheduleID,
   onClose,
   onScheduleDeleted,
+  failedScheduleDelete,
 }: {
   stayScheduleID: number
   onClose: () => void
   onScheduleDeleted: () => void
+  failedScheduleDelete: () => void
 }) => {
   const [staySchedule, setStaySchedule] = useState<StaySchedule | null>(null)
   const supabase = createClient()
@@ -56,6 +58,11 @@ export const StayScheduleModal = ({
     try {
       const { error } = await supabase.from('stay_schedules').delete().match({ id })
       if (error) {
+        if (error.code === '23503') {
+          failedScheduleDelete()
+          // モーダルを閉じる
+          onClose()
+        }
         throw error
       }
 

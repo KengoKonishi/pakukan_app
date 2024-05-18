@@ -7,18 +7,10 @@ import SubmitButton from '../../components/SubmitButton'
 export default function CreateForm() {
   const [checkInDatetime, setCheckInDatetime] = useState('')
   const [checkOutDatetime, setCheckOutDatetime] = useState('')
-  const [guestHouses, setGuestHouses] = useState<{ ids: number[]; names: string[] }>({
-    ids: [],
-    names: [],
-  })
-  const [guestHouseId, setGuestHouseId] = useState<number>(0)
-  const [guestHouseName, setGuestHouseName] = useState('')
-  const [cleaners, setCleaners] = useState<{ ids: number[]; names: string[] }>({
-    ids: [],
-    names: [],
-  })
-  const [cleanerId, setCleanerId] = useState<number>(0)
-  const [cleanerName, setCleanerName] = useState('')
+  const [guestHouses, setGuestHouses] = useState<{ [key: number]: string }>({})
+  const [selectedGuestHouseId, setSelectedGuestHouseId] = useState<number | null>(null)
+  const [cleaners, setCleaners] = useState<{ [key: number]: string }>({})
+  const [selectedCleanerId, setSelectedCleanerId] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [validationError, setValidationError] = useState('')
@@ -76,10 +68,12 @@ export default function CreateForm() {
         if (guestHouseError) {
           throw guestHouseError
         }
-        const guestHouseIds = guestHouseData.map((item) => item.id)
-        const guestHouseNames = guestHouseData.map((item) => item.name)
 
-        setGuestHouses({ ids: guestHouseIds, names: guestHouseNames })
+        const guestHousesMap: { [key: number]: string } = {}
+        guestHouseData.forEach((item) => {
+          guestHousesMap[item.id] = item.name
+        })
+        setGuestHouses(guestHousesMap)
 
         // 清掃員一覧の取得
         const { data: cleanersData, error: cleanersError } = await supabase
@@ -91,10 +85,11 @@ export default function CreateForm() {
           throw cleanersError
         }
 
-        const cleanerIds = cleanersData.map((item) => item.id)
-        const cleanerNames = cleanersData.map((item) => item.name)
-
-        setCleaners({ ids: cleanerIds, names: cleanerNames })
+        const cleanersMap: { [key: number]: string } = {}
+        cleanersData.forEach((item) => {
+          cleanersMap[item.id] = item.name
+        })
+        setCleaners(cleanersMap)
       } catch (e: unknown) {
         if (e instanceof Error) {
           setError(e.message)
@@ -109,22 +104,14 @@ export default function CreateForm() {
 
   //  宿泊施設の値更新
   const handleGuestHouseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedIndex = guestHouses.names.indexOf(e.target.value)
-    if (selectedIndex !== -1) {
-      const selectedId = guestHouses.ids[selectedIndex]
-      setGuestHouseId(selectedId)
-      setGuestHouseName(e.target.value)
-    }
+    const selectedId = parseInt(e.target.value)
+    setSelectedGuestHouseId(selectedId)
   }
 
   //  清掃員の値更新
   const handleCleanerChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedIndex = cleaners.names.indexOf(e.target.value)
-    if (selectedIndex !== -1) {
-      const selectedId = cleaners.ids[selectedIndex]
-      setCleanerId(selectedId)
-      setCleanerName(e.target.value)
-    }
+    const selectedId = parseInt(e.target.value)
+    setSelectedCleanerId(selectedId)
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
@@ -134,11 +121,16 @@ export default function CreateForm() {
     setValidationError('')
     setSuccessMessage('')
 
+    if (checkOutDatetime < checkInDatetime) {
+      setValidationError('清掃終了日時は清掃開始日時よりも後の日時を設定してください。')
+      return
+    }
+
     try {
       // 更新する清掃員シフトスケジュールデータを準備
       const cleaningScheduleData = {
-        cleaner_id: cleanerId !== 0 ? cleanerId : null, //初期設定はnullで設定し、LINEでシフト登録した時にcleaner_idを登録する
-        guest_house_id: guestHouseId,
+        cleaner_id: selectedCleanerId !== 0 ? selectedCleanerId : null, //初期設定はnullで設定し、LINEでシフト登録した時にcleaner_idを登録する
+        guest_house_id: selectedGuestHouseId!,
         start_datetime: checkInDatetime,
         end_datetime: checkOutDatetime,
         cleaning_status_id: cleaningStatus.STATUS_ID_PENDING,
@@ -221,15 +213,15 @@ export default function CreateForm() {
             宿泊施設名
           </label>
           <select
-            id='guestHouseName'
-            value={guestHouseName}
+            id='guestHouseId'
+            value={selectedGuestHouseId || ''}
             onChange={handleGuestHouseChange}
             required
             className='px-3 py-3 border rounded-md ring-2 ring-amber-500 ring-offset-0 focus:ring-4 focus:outline-none'
           >
             <option value=''>選択してください</option>
-            {guestHouses.names.map((name, index) => (
-              <option key={index} value={name}>
+            {Object.entries(guestHouses).map(([id, name]) => (
+              <option key={id} value={id}>
                 {name}
               </option>
             ))}
@@ -240,14 +232,14 @@ export default function CreateForm() {
             清掃員氏名（シフトが決まっている場合入力ください）
           </label>
           <select
-            id='cleanerName'
-            value={cleanerName}
+            id='cleanerId'
+            value={selectedCleanerId || 0}
             onChange={handleCleanerChange}
             className='px-3 py-3 border rounded-md ring-2 ring-amber-500 ring-offset-0 focus:ring-4 focus:outline-none'
           >
             <option value=''>選択してください</option>
-            {cleaners.names.map((name, index) => (
-              <option key={index} value={name}>
+            {Object.entries(cleaners).map(([id, name]) => (
+              <option key={id} value={id}>
                 {name}
               </option>
             ))}
