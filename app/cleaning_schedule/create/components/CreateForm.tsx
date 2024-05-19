@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { cleaningSchedule, cleaningStatus } from '@/app/config'
+import { cleaningSchedule, cleaningStatus } from '@/config'
 import { createClient } from '@/utils/supabase/client'
 import SubmitButton from '../../components/SubmitButton'
 
