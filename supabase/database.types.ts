@@ -44,34 +44,37 @@ export type Database = {
       }
       cleaning_reports: {
         Row: {
-          cleaning_schedule_id: number | null
+          cleaning_schedule_id: number
           comment: string | null
           created_at: string | null
-          form_url: string | null
+          edit_form_url: string
           id: number
+          response_url: string
           updated_at: string | null
         }
         Insert: {
-          cleaning_schedule_id?: number | null
+          cleaning_schedule_id: number
           comment?: string | null
           created_at?: string | null
-          form_url?: string | null
+          edit_form_url: string
           id?: number
+          response_url: string
           updated_at?: string | null
         }
         Update: {
-          cleaning_schedule_id?: number | null
+          cleaning_schedule_id?: number
           comment?: string | null
           created_at?: string | null
-          form_url?: string | null
+          edit_form_url?: string
           id?: number
+          response_url?: string
           updated_at?: string | null
         }
         Relationships: [
           {
             foreignKeyName: 'public_cleaning_reports_cleaning_schedule_id_fkey'
             columns: ['cleaning_schedule_id']
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: 'cleaning_schedules'
             referencedColumns: ['id']
           },
@@ -86,6 +89,7 @@ export type Database = {
           guest_house_id: number
           id: number
           start_datetime: string
+          stay_schedule_id: number | null
           updated_at: string | null
         }
         Insert: {
@@ -96,6 +100,7 @@ export type Database = {
           guest_house_id: number
           id?: number
           start_datetime: string
+          stay_schedule_id?: number | null
           updated_at?: string | null
         }
         Update: {
@@ -106,6 +111,7 @@ export type Database = {
           guest_house_id?: number
           id?: number
           start_datetime?: string
+          stay_schedule_id?: number | null
           updated_at?: string | null
         }
         Relationships: [
@@ -128,6 +134,13 @@ export type Database = {
             columns: ['guest_house_id']
             isOneToOne: false
             referencedRelation: 'guest_houses'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'public_cleaning_schedules_stay_schedule_id_fkey'
+            columns: ['stay_schedule_id']
+            isOneToOne: false
+            referencedRelation: 'stay_schedules'
             referencedColumns: ['id']
           },
         ]
@@ -226,7 +239,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      createStayAndCleaningSchedules: {
+        Args: {
+          stay_schedule_data: Json
+          cleaning_schedule_data: Json
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

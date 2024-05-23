@@ -25,6 +25,8 @@ const AdminCalendar = () => {
     endDate: '',
     scheduleId: 0,
   })
+  const [successMessage, setSuccessMessage] = useState('')
+  const [validationError, setValidationError] = useState('')
 
   useEffect(() => {
     // チェックがついた民泊施設に紐づくスケジュールを取得
@@ -33,7 +35,7 @@ const AdminCalendar = () => {
         .filter((option) => option.checked)
         .map((option) => option.id.toString()),
     )
-  }, [guestHouseOptions])
+  }, [guestHouseOptions, fetchSchedules])
 
   // 民泊施設のチェックボックス変更時の処理
   const onChangeGuestHouseCheckBox = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -96,7 +98,14 @@ const AdminCalendar = () => {
       endDate: '',
       scheduleId: 0,
     }))
-  }, [])
+
+    // スケジュールが削除された後に、再度stay_scheduleを取得する処理をここに実装
+    const checkedGuestHouseIds = guestHouseOptions
+      .filter((option) => option.checked)
+      .map((option) => option.id.toString())
+
+    void fetchSchedules(checkedGuestHouseIds)
+  }, [guestHouseOptions, fetchSchedules])
 
   // 清掃スケジュール削除時の処理
   const handleDeleteCleaningSchedule = useCallback(() => {
@@ -105,11 +114,27 @@ const AdminCalendar = () => {
         .filter((option) => option.checked)
         .map((option) => option.id.toString()),
     )
+    setSuccessMessage('削除が成功しました')
     // TODO: トーストを表示する
-  }, [guestHouseOptions])
+  }, [guestHouseOptions, fetchSchedules])
+
+  // 宿泊スケジュール削除後の処理
+  const handleScheduleDeleted = () => {
+    setSuccessMessage('削除が成功しました')
+  }
 
   return (
     <div className='w-full'>
+      {successMessage && (
+        <div className='text-blue-500 px-4 py-2 bg-yellow-200 rounded-md font-bold w-8/12 mb-4'>
+          {successMessage}
+        </div>
+      )}
+      {validationError && (
+        <div className='text-red-500 px-4 py-2 bg-yellow-200 rounded-md font-bold'>
+          {validationError}
+        </div>
+      )}
       {modalState.name === MODAL_NAMES.CREATE_SCHEDULE && (
         <CreateScheduleModal
           endDate={modalState.endDate}
@@ -121,6 +146,7 @@ const AdminCalendar = () => {
         <StayScheduleModal
           stayScheduleID={modalState.scheduleId}
           onClose={handleModalClose}
+          onScheduleDeleted={handleScheduleDeleted}
         />
       )}
       {modalState.name === MODAL_NAMES.CLEANING_SCHEDULE &&
@@ -128,7 +154,7 @@ const AdminCalendar = () => {
           <CleaningScheduleModal
             cleaningScheduleID={modalState.scheduleId}
             onClose={handleModalClose}
-            onDeleteSchedule={handleDeleteCleaningSchedule}
+            handleDeleteCleaningSchedule={handleDeleteCleaningSchedule}
           />
         )}
       <div className='flex flex-row justify-center items-center w-full'>

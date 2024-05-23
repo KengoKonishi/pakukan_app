@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
 
 export const CreateScheduleModal = ({
@@ -16,8 +17,21 @@ export const CreateScheduleModal = ({
     setSelected(event.target.value)
 
   const onClickCreateButton = () => {
-    // TODO: 宿泊スケジュール作成画面、または清掃員スケジュール作成画面に遷移させる
-    console.log(startDate, endDate, selected)
+    let destinationUrl = ''
+    if (selected === 'stay') {
+      // 宿泊スケジュール作成画面へのリンク
+      destinationUrl = `/stay_schedule/create?checkInDatetime=${startDate}&checkOutDatetime=${endDate}`
+    }
+    if (selected === 'cleaning') {
+      // 清掃員スケジュール作成画面へのリンク
+      destinationUrl = `/cleaning_schedule/create?startDatetime=${startDate}&endDatetime=${endDate}`
+    }
+
+    return (
+      <Link href={destinationUrl}>
+        <button className='py-2 px-4 rounded-md no-underline'>作成する</button>
+      </Link>
+    )
   }
 
   return (
@@ -80,14 +94,7 @@ export const CreateScheduleModal = ({
               <label htmlFor='cleaningSchedule'>清掃員スケジュール</label>
             </div>
           </div>
-          <div className='flex justify-center'>
-            <button
-              className='py-2 px-4 rounded-md no-underline'
-              onClick={onClickCreateButton}
-            >
-              作成する
-            </button>
-          </div>
+          <div className='flex justify-center'>{onClickCreateButton()}</div>
         </div>
       </div>
     </div>
