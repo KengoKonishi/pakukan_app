@@ -18,7 +18,8 @@ export default function Login({ searchParams }: { searchParams: { message: strin
     })
 
     if (error) {
-      return redirect('/login?message=Could not authenticate user')
+      const failLoginMessage = encodeURIComponent('ログインに失敗しました')
+      return redirect('/login?message=' + failLoginMessage)
     }
 
     return redirect('/')
@@ -26,34 +27,34 @@ export default function Login({ searchParams }: { searchParams: { message: strin
 
   // TODO: 清掃員作成機能の実装時に参考にする
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const signUp = async (formData: FormData) => {
-    'use server'
+  // const signUp = async (formData: FormData) => {
+  //   'use server'
 
-    const origin = headers().get('origin')
-    const email = formData.get('email') as string
-    const password = formData.get('password') as string
-    const supabase = createClient()
+  //   const origin = headers().get('origin')
+  //   const email = formData.get('email') as string
+  //   const password = formData.get('password') as string
+  //   const supabase = createClient()
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          role: 'admin',
-          name: email + 'さん',
-        },
-        emailRedirectTo: `${origin}/auth/callback`,
-      },
-    })
+  //   const { error } = await supabase.auth.signUp({
+  //     email,
+  //     password,
+  //     options: {
+  //       data: {
+  //         role: 'admin',
+  //         name: email + 'さん',
+  //       },
+  //       emailRedirectTo: `${origin}/auth/callback`,
+  //     },
+  //   })
 
-    if (error) {
-      console.log(error)
-      const failLoginMessage = encodeURIComponent('ログインに失敗しました')
-      return redirect('/login?message=' + failLoginMessage)
-    }
+  //   if (error) {
+  //     console.log(error)
+  //     const failLoginMessage = encodeURIComponent('ログインに失敗しました')
+  //     return redirect('/login?message=' + failLoginMessage)
+  //   }
 
-    return redirect('/login?message=Check email to continue sign in process')
-  }
+  //   return redirect('/login?message=Check email to continue sign in process')
+  // }
 
   return (
     <div className='min-h-screen flex flex-col items-center justify-center w-1/2'>

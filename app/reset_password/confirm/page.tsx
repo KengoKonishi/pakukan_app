@@ -36,7 +36,7 @@ export default function ResetPassword({
 
     if (error) {
       const failResetMessage = encodeURIComponent(
-        'パスワードリセットが失敗しました　（すでに設定されている可能性があります）',
+        'パスワードリセットが失敗しました　（すでに設定されているか、リンク切れの可能性があります）',
       )
       return redirect('/reset_password/confirm?message=' + failResetMessage)
     }
