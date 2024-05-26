@@ -35,7 +35,7 @@ const AdminCalendar = () => {
         .filter((option) => option.checked)
         .map((option) => option.id.toString()),
     )
-  }, [guestHouseOptions, fetchSchedules])
+  }, [guestHouseOptions])
 
   // 民泊施設のチェックボックス変更時の処理
   const onChangeGuestHouseCheckBox = (event: React.ChangeEvent<HTMLInputElement>) => {
