@@ -3,11 +3,11 @@
 import { DateSelectArg, EventClickArg } from '@fullcalendar/core'
 import { useCallback, useEffect, useState } from 'react'
 import Calendar from '@/components/calendar'
+import { CheckBoxList } from '@/components/checkbox/CheckBoxList'
+import { useGuestHouseOptions } from '@/hooks/useGuestHouseOptions'
 import { CleaningScheduleModal } from './components/CleaningScheduleModal'
 import { CreateScheduleModal } from './components/CreateScheduleModal'
-import { GuestHouseCheckBoxList } from './components/GuestHouseCheckBoxList'
 import { StayScheduleModal } from './components/StayScheduleModal'
-import { useGuestHouseOptions } from './hooks/useGuestHouseOptions'
 import { useSchedules } from './hooks/useSchedules'
 
 const MODAL_NAMES = {
@@ -35,7 +35,7 @@ const AdminCalendar = () => {
         .filter((option) => option.checked)
         .map((option) => option.id.toString()),
     )
-  }, [guestHouseOptions, fetchSchedules])
+  }, [guestHouseOptions])
 
   // 民泊施設のチェックボックス変更時の処理
   const onChangeGuestHouseCheckBox = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -159,8 +159,11 @@ const AdminCalendar = () => {
         )}
       <div className='flex flex-row justify-center items-center w-full'>
         <div className='w-1/6'>
-          <GuestHouseCheckBoxList
-            guestHouseOptions={guestHouseOptions}
+          <CheckBoxList
+            label='民泊施設一覧'
+            name='guestHouses'
+            options={guestHouseOptions}
+            isFlex={false}
             onChange={onChangeGuestHouseCheckBox}
           />
         </div>

@@ -1,6 +1,8 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { staySchedule, cleaningSchedule, cleaningStatus } from '@/config'
+import { CLEANING_SCHEDULE } from '@/constants/CleaningSchedule'
+import { CLEANING_STATUS_ID } from '@/constants/CleaningStatus'
+import { STAY_SCHEDULE } from '@/constants/StaySchedule'
 import { createClient } from '@/utils/supabase/client'
 import SubmitButton from '../../components/SubmitButton'
 
@@ -54,7 +56,7 @@ export default function CreateForm() {
       // 「2024/5/7」のような「日付」で渡される場合、デフォルトの時刻を設定
       initialCheckInDatetime = addDefaultTimeToDatetime(
         initialCheckInDatetimeParam,
-        staySchedule.GUEST_DEFAULT_CHECK_IN_TIME,
+        STAY_SCHEDULE.GUEST_DEFAULT_CHECK_IN_TIME,
       )
     }
 
@@ -67,7 +69,7 @@ export default function CreateForm() {
       // 「2024/5/7」のような「日付」で渡される場合、デフォルトの時刻を設定
       initialCheckOutDatetime = addDefaultTimeToDatetime(
         initialCheckOutDatetimeParam,
-        staySchedule.GUEST_DEFAULT_CHECK_OUT_TIME,
+        STAY_SCHEDULE.GUEST_DEFAULT_CHECK_OUT_TIME,
       )
     }
 
@@ -172,18 +174,18 @@ export default function CreateForm() {
       // 更新する清掃員シフトスケジュールデータを準備
       const cleaningStartDatetime = addHoursAndFormattDatetime(
         checkOutDatetime,
-        cleaningSchedule.SETTING_TIME_FOR_CLEANING_START_DATETIME,
+        CLEANING_SCHEDULE.SETTING_TIME_FOR_CLEANING_START_DATETIME,
       )
       const cleaningEndDatetime = addHoursAndFormattDatetime(
         cleaningStartDatetime,
-        cleaningSchedule.CLEANING_TIME,
+        CLEANING_SCHEDULE.CLEANING_TIME,
       )
       const cleaningScheduleData = {
         cleaner_id: null, //初期設定はnullで設定し、LINEでシフト登録した時にcleaner_idを登録する
         guest_house_id: selectedGuestHouseId!,
         start_datetime: cleaningStartDatetime,
         end_datetime: cleaningEndDatetime,
-        cleaning_status_id: cleaningStatus.STATUS_ID_PENDING,
+        cleaning_status_id: CLEANING_STATUS_ID.UNFINISHED,
       }
 
       // 宿泊スケジュールと清掃員シフトデータの両方を作成。
