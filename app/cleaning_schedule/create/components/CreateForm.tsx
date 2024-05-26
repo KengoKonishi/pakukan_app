@@ -1,6 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { cleaningSchedule, cleaningStatus } from '@/config'
+import { CLEANING_SCHEDULE } from '@/constants/CleaningSchedule'
+import { CLEANING_STATUS_ID } from '@/constants/CleaningStatus'
 import { createClient } from '@/utils/supabase/client'
 import SubmitButton from '../../components/SubmitButton'
 
@@ -39,7 +40,7 @@ export default function CreateForm() {
     } else if (initialStartDatetimeParam) {
       initialStartDatetime = addDefaultTimeToDatetimeAndFormatt(
         initialStartDatetimeParam,
-        cleaningSchedule.CLEANING_START_DEFAULT_TIME,
+        CLEANING_SCHEDULE.CLEANING_START_DEFAULT_TIME,
       )
     }
 
@@ -50,7 +51,7 @@ export default function CreateForm() {
     } else if (initialEndDatetimeParam) {
       initialEndDatetime = addDefaultTimeToDatetimeAndFormatt(
         initialEndDatetimeParam,
-        cleaningSchedule.CLEANING_END_DEFAULT_TIME,
+        CLEANING_SCHEDULE.CLEANING_END_DEFAULT_TIME,
       )
     }
 
@@ -133,7 +134,7 @@ export default function CreateForm() {
         guest_house_id: selectedGuestHouseId!,
         start_datetime: checkInDatetime,
         end_datetime: checkOutDatetime,
-        cleaning_status_id: cleaningStatus.STATUS_ID_PENDING,
+        cleaning_status_id: CLEANING_STATUS_ID.UNFINISHED,
       }
 
       // 清掃員シフトデータを作成
