@@ -69,14 +69,23 @@ export default function SettingForm() {
 
       // auth.users テーブルの更新
       const authUpdate = await supabase.auth.updateUser(authUserData)
+      console.log(authUpdate?.error?.status)
       if (authUpdate.error) {
+        if (authUpdate.error.status == 429) {
+          setValidationError(
+            '更新できるのは1分間に一度までです　1分後再度更新してください',
+          )
+          return
+        }
         throw authUpdate.error
       }
 
       // すべての更新処理が成功した場合の処理
       console.log('フォームの更新処理が成功しました')
       setTimeout(() => {
-        setSuccessMessage('更新が成功しました')
+        setSuccessMessage(
+          '更新が成功しました　（送信されたメールからアドレス変更手続きをお願いします）',
+        )
       }, 1000)
     } catch (e: unknown) {
       // 更新処理が失敗した場合の処理
