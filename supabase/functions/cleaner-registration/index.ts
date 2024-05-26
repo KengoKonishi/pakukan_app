@@ -1,7 +1,6 @@
 console.log('Functions start')
 import { createClient } from 'https://esm.sh/@supabase/supabase-js'
-
-const LINE_PUSH_MESSAGE_URL = 'https://api.line.me/v2/bot/message/push'
+import { LINE_API } from '../_shared/line.ts'
 
 // NOTE: 清掃員の登録を行う関数
 // NOTE: GoogleForm送信時にGoogleAppsScriptからデータが送信される
@@ -41,7 +40,7 @@ Deno.serve(async (req) => {
       })
 
       try {
-        await fetch(LINE_PUSH_MESSAGE_URL, {
+        await fetch(LINE_API.PUSH_MESSAGE_URL, {
           method: 'POST',
           headers: headers,
           body: dataString,
@@ -82,7 +81,7 @@ Deno.serve(async (req) => {
       messages: replyMessages,
     })
 
-    await fetch(LINE_PUSH_MESSAGE_URL, {
+    await fetch(LINE_API.PUSH_MESSAGE_URL, {
       method: 'POST',
       headers: headers,
       body: dataString,
