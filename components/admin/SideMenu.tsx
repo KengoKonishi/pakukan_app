@@ -20,7 +20,7 @@ const SideMenu = () => {
         </div>
         <div className={`menu-items py-2 ${isOpen ? 'open' : ''}`}>
           <MenuItemCalender />
-          <MenuItem link='/cleaning_status_list/'>清掃状況管理</MenuItem>
+          <MenuItem link='/cleaning_status/list/'>清掃状況管理</MenuItem>
           <MenuItem link='/guesthouse/list/'>民泊施設情報</MenuItem>
           <MenuItem link='/cleaner/list/'>清掃員情報</MenuItem>
           <MenuItemAdminSettings />

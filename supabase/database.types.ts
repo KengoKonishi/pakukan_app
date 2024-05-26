@@ -47,27 +47,27 @@ export type Database = {
           cleaning_schedule_id: number
           comment: string | null
           created_at: string | null
-          edit_form_url: string
+          edit_form_url: string | null
           id: number
-          response_url: string
+          response_url: string | null
           updated_at: string | null
         }
         Insert: {
           cleaning_schedule_id: number
           comment?: string | null
           created_at?: string | null
-          edit_form_url: string
+          edit_form_url?: string | null
           id?: number
-          response_url: string
+          response_url?: string | null
           updated_at?: string | null
         }
         Update: {
           cleaning_schedule_id?: number
           comment?: string | null
           created_at?: string | null
-          edit_form_url?: string
+          edit_form_url?: string | null
           id?: number
-          response_url?: string
+          response_url?: string | null
           updated_at?: string | null
         }
         Relationships: [
