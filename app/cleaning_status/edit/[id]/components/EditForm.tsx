@@ -8,6 +8,7 @@ import UpdateButton from './UpdateButton'
 
 type CleaningReportInEditPage = {
   id: number
+  edit_form_url: string | null
   response_url: string | null
   cleaning_schedules: {
     id: number
@@ -26,6 +27,7 @@ type CleaningReportInEditPage = {
 export default function SettingForm() {
   const [cleaningReport, setCleaningReport] = useState<CleaningReportInEditPage>({
     id: 0,
+    edit_form_url: '',
     response_url: '',
     cleaning_schedules: {
       id: 0,
@@ -40,7 +42,7 @@ export default function SettingForm() {
       },
     },
   })
-  console.log(cleaningReport)
+
   const [error, setError] = useState('')
   const [validationError, setValidationError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
@@ -56,7 +58,7 @@ export default function SettingForm() {
         const { data, error: getCleaningReportsError } = await supabase
           .from('cleaning_reports')
           .select(
-            'id, response_url, cleaning_schedules (id, start_datetime, end_datetime, guest_houses (name), cleaning_status_id, cleaners (name))',
+            'id, edit_form_url, response_url, cleaning_schedules (id, start_datetime, end_datetime, guest_houses (name), cleaning_status_id, cleaners (name))',
           )
           .eq('id', cleaningReportId)
           .limit(1)
@@ -180,8 +182,22 @@ export default function SettingForm() {
           </div>
         </div>
         <div className='flex flex-col mb-6'>
+          <label htmlFor='guestHouseName' className='mb-4 pl-4 text-gray-700'>
+            回答用URL
+          </label>
+          <div className='pl-4'>
+            <div className='text-sm text-red-600 mb-2'>
+              ※画像は下記のURLからでは確認できないため、Gmailに届いたメールのリンクからご確認ください。
+            </div>
+            <a href={cleaningReport?.edit_form_url ?? ''} target='_blank'>
+              {cleaningReport?.edit_form_url ?? ''}
+            </a>
+          </div>
+        </div>
+        <div className='flex flex-col mb-6'>
           <label htmlFor='name' className='mb-4 pl-4 text-gray-700'>
-            Googleフォームリンク (任意※差し戻し時に、リンクを探す手間を省くことができます)
+            Googleフォームリンク (任意 ※Gmailに届いたメールのリンクを登録ください。
+            差し戻し時に、リンクを探す手間を省くことができます)
           </label>
           <input
             type='response_url'
