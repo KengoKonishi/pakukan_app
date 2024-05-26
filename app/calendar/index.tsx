@@ -4,10 +4,10 @@ import { DateSelectArg, EventClickArg } from '@fullcalendar/core'
 import { useCallback, useEffect, useState } from 'react'
 import Calendar from '@/components/calendar'
 import { CheckBoxList } from '@/components/checkbox/CheckBoxList'
+import { useGuestHouseOptions } from '@/hooks/useGuestHouseOptions'
 import { CleaningScheduleModal } from './components/CleaningScheduleModal'
 import { CreateScheduleModal } from './components/CreateScheduleModal'
 import { StayScheduleModal } from './components/StayScheduleModal'
-import { useGuestHouseOptions } from './hooks/useGuestHouseOptions'
 import { useSchedules } from './hooks/useSchedules'
 
 const MODAL_NAMES = {
