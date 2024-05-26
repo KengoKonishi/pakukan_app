@@ -201,6 +201,7 @@ const CleaningStatusTable = () => {
           label='清掃ステータス'
           name='cleaningStatus'
           options={cleaningStatusOptions}
+          isFlex
           onChange={onChangeCleaningCheckBox}
         />
       </div>
@@ -209,6 +210,7 @@ const CleaningStatusTable = () => {
           label='宿泊施設'
           name='guestHouses'
           options={guestHouseOptions}
+          isFlex
           onChange={onChangeGuestHouseCheckBox}
         />
       </div>
