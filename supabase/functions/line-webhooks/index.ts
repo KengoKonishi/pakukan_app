@@ -9,7 +9,7 @@ const CLEANING_REPORT_BASE_URL =
   'https://docs.google.com/forms/d/e/1FAIpQLSfcfRJBCaAJ6MleHyLjaJRD8y_Z8bUkG6D6U-StENGA263j8g/viewform?usp=pp_url&entry.1699498928=cleaningId&entry.1337618168=email&entry.847282419=cleanerName&entry.1904612076=cleaningScheduleStartDate&entry.2095971157=guestHouseName'
 
 const GOOGLE_CALENDAR_APP_URL =
-  'https://script.google.com/macros/s/AKfycbwU95NcRyWH2WiWgAsphp169YsF8ceqvaPKgOgByhJfITa7aZUPLAMTCOCrOBYufQh7/exec'
+  'https://script.google.com/macros/s/AKfycbzQU92xwQqL5SULty7UbMRocIITNK2g9-oC8gnAkwLUzxwpZUrJESE2q4ToPWa0vowO/exec'
 
 // NOTE: LINEのWebhook URLとして登録している関数
 Deno.serve(async (request) => {
@@ -558,7 +558,7 @@ const processEvent = async (event) => {
     const { data: cleaningReportData, error: getCleaningReportError } = await supabase
       .from('cleaning_reports')
       .select(
-        'id, form_url, cleaning_schedules (id, start_datetime, end_datetime, guest_houses (name))',
+        'id, edit_form_url, cleaning_schedules (id, start_datetime, end_datetime, guest_houses (name))',
       )
       .eq('cleaning_schedule_id', cleaningScheduleId)
       .order('id')
@@ -569,19 +569,21 @@ const processEvent = async (event) => {
       return
     }
 
+    console.log('cleaningReportData: ', cleaningReportData)
     let cleaningFormUrl = ''
-    if (cleaningReportData.length === 0) {
-      // 報告データがまだない場合
-      console.log('cleaningReportData.length === 0')
+    if (cleaningReportData.length === 0 || !cleaningReportData[0].edit_form_url) {
+      // 報告データがまだない場合、もしくはフォームのURLが登録されていない場合
+      console.log('清掃員回答用のURLを作成して返却')
       cleaningFormUrl = CLEANING_REPORT_BASE_URL.replace('cleaningId', cleaningScheduleId)
         .replace('email', cleaner.email)
         .replace('cleanerName', cleaner.name)
         .replace('cleaningScheduleStartDate', cleaningSchedule.start_datetime)
         .replace('guestHouseName', cleaningSchedule.guest_houses.name)
     } else {
-      // 報告データがある場合
+      console.log('登録済みのURLを返却')
+      // 清掃員回答用のURLがデータがある場合
       const cleaningReport = cleaningReportData[0]
-      cleaningFormUrl = cleaningReport.form_url
+      cleaningFormUrl = cleaningReport.edit_form_url
     }
 
     const replyMessages: TextMessage[] = [
