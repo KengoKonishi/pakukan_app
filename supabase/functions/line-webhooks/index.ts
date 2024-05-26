@@ -1,8 +1,8 @@
 console.log('Functions start')
 import { createClient } from 'https://esm.sh/@supabase/supabase-js'
 import * as crypto from 'https://deno.land/std@0.166.0/node/crypto.ts'
+import { LINE_API } from '../_shared/line.ts'
 
-const LINE_REPLY_MESSAGE_URL = 'https://api.line.me/v2/bot/message/reply'
 const CLEANER_REGISTRATION_FORM_BASE_URL =
   'https://docs.google.com/forms/d/e/1FAIpQLSf0a2362CrlBG_V_ckjXFNE472LzvPoU8pcM77EeQpzW-5LXA/viewform?usp=pp_url&entry.503257359='
 const CLEANING_REPORT_BASE_URL =
@@ -628,7 +628,7 @@ const replyToLINE = async (
   })
 
   try {
-    await fetch(LINE_REPLY_MESSAGE_URL, {
+    await fetch(LINE_API.LINE_REPLY_MESSAGE_URL, {
       method: 'POST',
       headers: headers,
       body: dataString,

@@ -1,8 +1,7 @@
 console.log('Functions start')
 import { createClient } from 'https://esm.sh/@supabase/supabase-js'
 import { corsHeaders } from '../_shared/cors.ts'
-
-const LINE_PUSH_MESSAGE_URL = 'https://api.line.me/v2/bot/message/push'
+import { LINE_API } from '../_shared/line.ts'
 
 // NOTE: 清掃状況のステータスの変更を行う
 // NOTE: 管理者が清掃状況編集画面から更新を行った際に呼び出される
@@ -112,7 +111,7 @@ Deno.serve(async (req) => {
         messages: replyMessages,
       })
 
-      await fetch(LINE_PUSH_MESSAGE_URL, {
+      await fetch(LINE_API.PUSH_MESSAGE_URL, {
         method: 'POST',
         headers: headers,
         body: dataString,
