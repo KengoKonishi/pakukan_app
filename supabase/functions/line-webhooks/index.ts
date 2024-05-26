@@ -8,9 +8,6 @@ const CLEANER_REGISTRATION_FORM_BASE_URL =
 const CLEANING_REPORT_BASE_URL =
   'https://docs.google.com/forms/d/e/1FAIpQLSfcfRJBCaAJ6MleHyLjaJRD8y_Z8bUkG6D6U-StENGA263j8g/viewform?usp=pp_url&entry.1699498928=cleaningId&entry.1337618168=email&entry.847282419=cleanerName&entry.1904612076=cleaningScheduleStartDate&entry.2095971157=guestHouseName'
 
-const GOOGLE_CALENDAR_APP_URL =
-  'https://script.google.com/macros/s/AKfycbzQU92xwQqL5SULty7UbMRocIITNK2g9-oC8gnAkwLUzxwpZUrJESE2q4ToPWa0vowO/exec'
-
 // NOTE: LINEのWebhook URLとして登録している関数
 Deno.serve(async (request) => {
   // NOTE: 署名の検証にbodyのテキストが必要
@@ -276,10 +273,12 @@ const processEvent = async (event) => {
         attendeesEmail: updateCleaningSchedule.cleaners.email,
       }
       console.log(body)
-      await fetch(GOOGLE_CALENDAR_APP_URL, {
+      const res = await fetch(Deno.env.get('GOOGLE_CALENDAR_APP_URL') ?? '', {
         method: 'POST',
         body: JSON.stringify(body),
       })
+      const data = await res.json()
+      console.log(data)
     } catch (e) {
       console.error('Googleカレンダーへの同期エラー')
       console.error(e)
