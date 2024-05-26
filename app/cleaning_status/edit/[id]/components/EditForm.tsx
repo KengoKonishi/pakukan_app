@@ -95,23 +95,24 @@ export default function SettingForm() {
         throw new Error('更新処理が失敗しました: 清掃報告のデータがありません')
       }
 
-      const { error: cleaningScheduleUpdateError } = await supabase
-        .from('cleaning_schedules')
-        .update({ cleaning_status_id: updateStatus })
-        .eq('id', cleaningReport.cleaning_schedules.id)
+      const dataString = JSON.stringify({
+        cleaningScheduleId: cleaningReport.cleaning_schedules.id,
+        updateStatus,
+        cleaningReportId: cleaningReport.id,
+        cleaningReportResponseUrl: cleaningReport.response_url,
+      })
 
-      if (cleaningScheduleUpdateError) {
-        throw cleaningScheduleUpdateError
-      }
-
-      const { error: cleaningReportUpdateError } = await supabase
-        .from('cleaning_reports')
-        .update({ response_url: cleaningReport.response_url })
-        .eq('id', cleaningReportId)
-
-      if (cleaningReportUpdateError) {
-        throw cleaningReportUpdateError
-      }
+      await fetch(
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/update-cleaning-status`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: dataString,
+        },
+      )
 
       if (updateStatus === CLEANING_STATUS_ID.COMPLETED) {
         window.location.reload()
