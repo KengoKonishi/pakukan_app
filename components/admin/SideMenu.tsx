@@ -20,7 +20,7 @@ const SideMenu = () => {
         </div>
         <div className={`menu-items py-2 ${isOpen ? 'open' : ''}`}>
           <MenuItemCalender />
-          <MenuItem link='/cleaning_status_list/'>清掃状況管理</MenuItem>
+          <MenuItem link='/cleaning_status/list/'>清掃状況管理</MenuItem>
           <MenuItem link='/guesthouse/list/'>民泊施設情報</MenuItem>
           <MenuItem link='/cleaner/list/'>清掃員情報</MenuItem>
           <MenuItemAdminSettings />
@@ -55,8 +55,8 @@ const MenuItemCalender = () => {
       </div>
       {isExpanded && (
         <div className='text-sm ml-2'>
-          <MenuItem link='/stay_schedule/create'>宿泊スケジュール作成</MenuItem>
-          <MenuItem link='/staff_schedule/create'>清掃員スケジュール作成</MenuItem>
+          <MenuItem link='/stay_schedule/create/'>宿泊スケジュール作成</MenuItem>
+          <MenuItem link='/cleaning_schedule/create/'>清掃員スケジュール作成</MenuItem>
         </div>
       )}
     </div>

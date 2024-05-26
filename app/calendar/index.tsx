@@ -3,11 +3,11 @@
 import { DateSelectArg, EventClickArg } from '@fullcalendar/core'
 import { useCallback, useEffect, useState } from 'react'
 import Calendar from '@/components/calendar'
+import { CheckBoxList } from '@/components/checkbox/CheckBoxList'
+import { useGuestHouseOptions } from '@/hooks/useGuestHouseOptions'
 import { CleaningScheduleModal } from './components/CleaningScheduleModal'
 import { CreateScheduleModal } from './components/CreateScheduleModal'
-import { GuestHouseCheckBoxList } from './components/GuestHouseCheckBoxList'
 import { StayScheduleModal } from './components/StayScheduleModal'
-import { useGuestHouseOptions } from './hooks/useGuestHouseOptions'
 import { useSchedules } from './hooks/useSchedules'
 
 const MODAL_NAMES = {
@@ -25,6 +25,8 @@ const AdminCalendar = () => {
     endDate: '',
     scheduleId: 0,
   })
+  const [successMessage, setSuccessMessage] = useState('')
+  const [validationError, setValidationError] = useState('')
 
   useEffect(() => {
     // チェックがついた民泊施設に紐づくスケジュールを取得
@@ -96,7 +98,14 @@ const AdminCalendar = () => {
       endDate: '',
       scheduleId: 0,
     }))
-  }, [])
+
+    // スケジュールが削除された後に、再度stay_scheduleを取得する処理をここに実装
+    const checkedGuestHouseIds = guestHouseOptions
+      .filter((option) => option.checked)
+      .map((option) => option.id.toString())
+
+    void fetchSchedules(checkedGuestHouseIds)
+  }, [guestHouseOptions, fetchSchedules])
 
   // 清掃スケジュール削除時の処理
   const handleDeleteCleaningSchedule = useCallback(() => {
@@ -105,11 +114,27 @@ const AdminCalendar = () => {
         .filter((option) => option.checked)
         .map((option) => option.id.toString()),
     )
+    setSuccessMessage('削除が成功しました')
     // TODO: トーストを表示する
-  }, [guestHouseOptions])
+  }, [guestHouseOptions, fetchSchedules])
+
+  // 宿泊スケジュール削除後の処理
+  const handleScheduleDeleted = () => {
+    setSuccessMessage('削除が成功しました')
+  }
 
   return (
     <div className='w-full'>
+      {successMessage && (
+        <div className='text-blue-500 px-4 py-2 bg-yellow-200 rounded-md font-bold w-8/12 mb-4'>
+          {successMessage}
+        </div>
+      )}
+      {validationError && (
+        <div className='text-red-500 px-4 py-2 bg-yellow-200 rounded-md font-bold'>
+          {validationError}
+        </div>
+      )}
       {modalState.name === MODAL_NAMES.CREATE_SCHEDULE && (
         <CreateScheduleModal
           endDate={modalState.endDate}
@@ -121,6 +146,7 @@ const AdminCalendar = () => {
         <StayScheduleModal
           stayScheduleID={modalState.scheduleId}
           onClose={handleModalClose}
+          onScheduleDeleted={handleScheduleDeleted}
         />
       )}
       {modalState.name === MODAL_NAMES.CLEANING_SCHEDULE &&
@@ -128,13 +154,16 @@ const AdminCalendar = () => {
           <CleaningScheduleModal
             cleaningScheduleID={modalState.scheduleId}
             onClose={handleModalClose}
-            onDeleteSchedule={handleDeleteCleaningSchedule}
+            handleDeleteCleaningSchedule={handleDeleteCleaningSchedule}
           />
         )}
       <div className='flex flex-row justify-center items-center w-full'>
         <div className='w-1/6'>
-          <GuestHouseCheckBoxList
-            guestHouseOptions={guestHouseOptions}
+          <CheckBoxList
+            label='民泊施設一覧'
+            name='guestHouses'
+            options={guestHouseOptions}
+            isFlex={false}
             onChange={onChangeGuestHouseCheckBox}
           />
         </div>
