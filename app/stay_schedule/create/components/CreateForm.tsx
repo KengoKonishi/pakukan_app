@@ -246,7 +246,6 @@ export default function CreateForm() {
         body: JSON.stringify(body),
       })
       const data = await res.json()
-      console.log(data)
 
       if (!data) {
         console.error('Googleカレンダーへの同期エラー')

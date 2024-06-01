@@ -270,12 +270,9 @@ const processEvent = async (event) => {
 
     // Googleカレンダーに同期
     try {
-      // 複数宛先に送信することを考慮し配列に格納
-      // NOTE: 管理者宛にもメール送信するが、それはGASで設定
-      const sendEmailTarget = [updateCleaningSchedule.cleaners.email]
       const body = {
         action: 'createCleaningEvent',
-        summary: `${updateCleaningSchedule.cleaners.name}`,
+        summary: `${updateCleaningSchedule.cleaners.name}さん / ${guestHouse}`,
         startDateISOString: new Date(
           updateCleaningSchedule.start_datetime + '+09:00',
         ).toISOString(), // Googleカレンダー登録用
@@ -283,7 +280,7 @@ const processEvent = async (event) => {
           updateCleaningSchedule.end_datetime + '+09:00',
         ).toISOString(), // Googleカレンダー登録用
         guestHouse,
-        attendeesEmail: sendEmailTarget,
+        attendeesEmail: updateCleaningSchedule.cleaners.email,
         // 宿泊スケジュールの詳細情報を追加
         description: `
           宿泊者名: ${stayScheduleData[0].guest_name}
