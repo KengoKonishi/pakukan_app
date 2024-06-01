@@ -24,7 +24,7 @@ const SideMenu = () => {
           <MenuItem link='/guesthouse/list/'>民泊施設情報</MenuItem>
           <MenuItem link='/cleaner/list/'>清掃員情報</MenuItem>
           <MenuItemAdminSettings />
-          <MenuItem link=''>ログアウト</MenuItem>
+          <MenuItem link='/login/'>ログアウト</MenuItem>
         </div>
       </div>
     </div>
