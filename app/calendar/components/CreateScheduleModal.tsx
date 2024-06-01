@@ -29,7 +29,9 @@ export const CreateScheduleModal = ({
 
     return (
       <Link href={destinationUrl}>
-        <button className='py-2 px-4 rounded-md no-underline'>作成する</button>
+        <button className='py-2 px-4 bg-amber-500 text-white rounded-full font-bold w-40 text-lg focus:outline-none focus:ring-4'>
+          作成する
+        </button>
       </Link>
     )
   }
@@ -41,7 +43,7 @@ export const CreateScheduleModal = ({
     >
       {/* モーダル全体 */}
       <div
-        className='flex flex-col justify-center items-center w-4/5 p-5 my-24 bg-white border z-20'
+        className='flex flex-col justify-center items-center w-2/5 p-5 my-24 bg-gray-200 border z-20'
         onClick={(e) => e.stopPropagation()}
       >
         {/* モーダルヘッダー */}
@@ -56,9 +58,9 @@ export const CreateScheduleModal = ({
           </button>
         </div>
         {/* モーダルコンテンツ */}
-        <div className='w-3/5'>
-          <div className='flex justify-start'>
-            <h3 className='text-2xl'>スケジュール登録</h3>
+        <div className='w-4/5'>
+          <div className='flex justify-start border-b-4 border-b-amber-500 mb-4'>
+            <h3 className='text-2xl font-bold pt-5 pl-5 mb-2'>スケジュール登録</h3>
           </div>
           <div className='flex gap-20 p-5'>
             <div>
@@ -71,7 +73,7 @@ export const CreateScheduleModal = ({
             </div>
           </div>
           <div className='gap-20 p-5'>
-            <div>
+            <div className='mb-4'>
               <input
                 type='radio'
                 id='staySchedule'
@@ -94,7 +96,7 @@ export const CreateScheduleModal = ({
               <label htmlFor='cleaningSchedule'>清掃員スケジュール</label>
             </div>
           </div>
-          <div className='flex justify-center'>{onClickCreateButton()}</div>
+          <div className='flex justify-center mt-4 mb-4'>{onClickCreateButton()}</div>
         </div>
       </div>
     </div>

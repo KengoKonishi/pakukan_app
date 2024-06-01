@@ -115,7 +115,7 @@ export const StayScheduleModal = ({
       >
         {/* モーダル全体 */}
         <div
-          className='flex flex-col justify-start items-center h-5/6 w-4/5 p-5 my-24 bg-white border z-20 overflow-auto'
+          className='flex flex-col justify-start items-center h-5/6 w-3/5 p-5 my-24 bg-gray-200 border z-20 overflow-auto'
           onClick={(e) => e.stopPropagation()}
         >
           {/* モーダルヘッダー */}
@@ -130,13 +130,15 @@ export const StayScheduleModal = ({
             </button>
           </div>
           {/* モーダルコンテンツ */}
-          <div className='w-3/5'>
-            <div className='flex justify-start'>
-              <h3 className='text-2xl'>宿泊スケジュール</h3>
+          <div className='w-4/5'>
+            <div className='flex justify-start border-b-4 border-b-amber-500 mb-4'>
+              <h3 className='text-2xl font-bold pt-5 pl-5 mb-2'>宿泊スケジュール</h3>
             </div>
             <div className='flex justify-end'>
               <Link href={`/stay_schedule/edit/${staySchedule.id}`}>
-                <button className='py-2 px-4 rounded-md no-underline'>編集</button>
+                <button className='mr-4 px-6 py-1 bg-blue-500 text-white rounded-full font-bold focus:outline-none hover:bg-blue-600'>
+                  編集
+                </button>
               </Link>
               <DeleteButton
                 onConfirmDelete={() => handleDelete(staySchedule.id)}
