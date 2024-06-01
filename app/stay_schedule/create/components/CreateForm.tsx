@@ -39,7 +39,7 @@ export default function CreateForm() {
   const supabase = createClient()
   const [userEmail, setUserEmail] = useState('')
   const GOOGLE_CALENDAR_APP_URL =
-    'https://script.google.com/macros/s/AKfycbzQU92xwQqL5SULty7UbMRocIITNK2g9-oC8gnAkwLUzxwpZUrJESE2q4ToPWa0vowO/exec'
+    'https://script.google.com/macros/s/AKfycbyRRLRHOgTYRjMKe3-YCorT7RkBgkFl1J5kvc4UWjZlqHD7Yq-KY4SxVAA4-BmFHrS6/exec'
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
@@ -246,6 +246,7 @@ export default function CreateForm() {
         body: JSON.stringify(body),
       })
       const data = await res.json()
+      console.log(data)
 
       if (!data) {
         console.error('Googleカレンダーへの同期エラー')
