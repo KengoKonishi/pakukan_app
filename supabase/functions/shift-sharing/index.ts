@@ -2,7 +2,12 @@ console.log('Functions start')
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js'
 import { corsHeaders } from '../_shared/cors.ts'
-import { LINE_API, CarouselContainerContent, FlexMessage } from '../_shared/line.ts'
+import {
+  LINE_API,
+  CarouselContainerContent,
+  FlexMessage,
+  CAROUSEL_CONTENT_MAX_SIZE,
+} from '../_shared/line.ts'
 
 // NOTE: 募集中のシフトをLINEで通知する
 // NOTE: 管理者がカレンダー画面でボタンを押した際に呼び出される
@@ -44,7 +49,10 @@ Deno.serve(async (req) => {
       })
     }
 
+    console.log(cleaningScheduleData)
+
     // 募集中のシフトが存在する場合
+
     const contents: CarouselContainerContent[] = []
     cleaningScheduleData.forEach((schedule) => {
       const startDatetime = new Date(schedule.start_datetime).toLocaleString()
@@ -83,7 +91,7 @@ Deno.serve(async (req) => {
       })
     })
 
-    const replyMessages: FlexMessage[] = [
+    const messages: FlexMessage[] = [
       {
         type: 'flex',
         altText: '募集中のシフトが連携されました。',
@@ -107,32 +115,50 @@ Deno.serve(async (req) => {
           ],
         },
       },
-      // シフト一覧部分
-      {
+    ]
+
+    // NOTE: LINEのAPIの仕様でカルーセルの最大サイズが決められている
+    const slicedContents = contents.slice(0, CAROUSEL_CONTENT_MAX_SIZE * 4)
+    const tmpContent: CarouselContainerContent[][] = []
+    for (let i = 0; i < slicedContents.length; i += CAROUSEL_CONTENT_MAX_SIZE) {
+      const chunk = slicedContents.slice(i, i + CAROUSEL_CONTENT_MAX_SIZE)
+      tmpContent.push(chunk)
+    }
+    tmpContent.forEach((chunkContent) => {
+      messages.push({
         type: 'flex',
         altText: '募集中のシフトが連携されました。',
         contents: {
           type: 'carousel',
-          contents: contents,
+          contents: chunkContent,
         },
-      },
-    ]
+      })
+    })
 
     const headers = {
       Authorization: `Bearer ${Deno.env.get('LINE_CHANNEL_ACCESS_TOKEN') ?? ''}`,
       'Content-Type': 'application/json',
     }
     const dataString = JSON.stringify({
-      messages: replyMessages,
+      messages: messages,
     })
 
     try {
       // NOTE: 友達になっているユーザーに対して一斉送信する
-      await fetch(LINE_API.BROADCAST_URL, {
+      const res = await fetch(LINE_API.BROADCAST_URL, {
         method: 'POST',
         headers: headers,
         body: dataString,
       })
+
+      const data = await res.json()
+      if (!res.ok) {
+        console.error(data)
+        return new Response(JSON.stringify({ error: 'please confirm server log' }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500,
+        })
+      }
     } catch (e) {
       console.error(e)
     }

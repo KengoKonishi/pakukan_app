@@ -66,7 +66,7 @@ export const ShiftShareButton = () => {
               </div>
             )}
             <p className='mb-4 whitespace-pre-wrap'>
-              {`担当者の決まっていないシフトが一斉通知されます。\nよろしいですか？`}
+              {`担当者の決まっていないシフトが一斉通知されます。\nよろしいですか？\n※送信できるのは最大48件です。`}
             </p>
             <div className='flex justify-center'>
               <button
