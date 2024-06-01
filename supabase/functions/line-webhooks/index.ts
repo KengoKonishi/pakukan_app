@@ -177,7 +177,7 @@ const processEvent = async (event) => {
     const replyMessages: FlexMessage[] = [
       {
         type: 'flex',
-        altText: 'This is a Flex Message',
+        altText: '現在募集中のシフトです。',
         contents: {
           type: 'carousel',
           contents: [
@@ -199,20 +199,15 @@ const processEvent = async (event) => {
       },
     ]
 
-    // NOTE: LINEのAPIの仕様でカルーセルの最大サイズが決められている
-    const slicedContents = contents.slice(0, CAROUSEL_CONTENT_MAX_SIZE * 4)
-    const tmpContent: CarouselContainerContent[][] = []
-    for (let i = 0; i < slicedContents.length; i += CAROUSEL_CONTENT_MAX_SIZE) {
-      const chunk = slicedContents.slice(i, i + CAROUSEL_CONTENT_MAX_SIZE)
-      tmpContent.push(chunk)
-    }
-    tmpContent.forEach((chunkContent) => {
+    // NOTE: LINEのAPIの仕様でカルーセルの最大サイズが決められているのでおさまるように整形する
+    const groupingContents = toGroupingCarouselContainerContents(contents)
+    groupingContents.forEach((contents) => {
       replyMessages.push({
         type: 'flex',
         altText: '募集中のシフトが連携されました。',
         contents: {
           type: 'carousel',
-          contents: chunkContent,
+          contents: contents,
         },
       })
     })
@@ -358,6 +353,8 @@ const processEvent = async (event) => {
       return
     }
 
+    console.log(cleaningScheduleData)
+
     // シフトがある場合
     const contents: CarouselContainerContent[] = []
     cleaningScheduleData.forEach((schedule) => {
@@ -384,7 +381,7 @@ const processEvent = async (event) => {
     const replyMessages: FlexMessage[] = [
       {
         type: 'flex',
-        altText: 'This is a Flex Message',
+        altText: '現在入っているシフトが送信されました。',
         contents: {
           type: 'carousel',
           contents: [
@@ -404,16 +401,23 @@ const processEvent = async (event) => {
           ],
         },
       },
-      // シフト一覧部分
-      {
-        type: 'flex',
-        altText: 'This is a Flex Message',
-        contents: {
-          type: 'carousel',
-          contents: contents,
-        },
-      },
     ]
+
+    // NOTE: LINEのAPIの仕様でカルーセルの最大サイズが決められているのでおさまるように整形する
+    const groupingContents = toGroupingCarouselContainerContents(contents)
+    groupingContents.forEach((content) => {
+      replyMessages.push(
+        // シフト一覧部分
+        {
+          type: 'flex',
+          altText: '現在入っているシフトが送信されました。',
+          contents: {
+            type: 'carousel',
+            contents: content,
+          },
+        },
+      )
+    })
 
     await replyToLINE(event.replyToken, replyMessages)
     return
@@ -449,8 +453,6 @@ const processEvent = async (event) => {
       return
     }
 
-    console.log(cleaningScheduleData)
-
     // 清掃報告対象がない場合
     if (cleaningScheduleData.length === 0) {
       const replyMessages: TextMessage[] = [
@@ -462,6 +464,8 @@ const processEvent = async (event) => {
       await replyToLINE(event.replyToken, replyMessages)
       return
     }
+
+    console.log(cleaningScheduleData)
 
     // 清掃報告対象のシフトが存在する場合
     const contents: CarouselContainerContent[] = []
@@ -504,7 +508,7 @@ const processEvent = async (event) => {
     const replyMessages: FlexMessage[] = [
       {
         type: 'flex',
-        altText: 'This is a Flex Message',
+        altText: '清掃報告の対象が送信されました。',
         contents: {
           type: 'carousel',
           contents: [
@@ -525,16 +529,19 @@ const processEvent = async (event) => {
           ],
         },
       },
-      // シフト一覧部分
-      {
+    ]
+    // NOTE: LINEのAPIの仕様でカルーセルの最大サイズが決められているのでおさまるように整形する
+    const groupingContents = toGroupingCarouselContainerContents(contents)
+    groupingContents.forEach((contents) => {
+      replyMessages.push({
         type: 'flex',
-        altText: 'This is a Flex Message',
+        altText: '清掃報告の対象が送信されました。',
         contents: {
           type: 'carousel',
           contents: contents,
         },
-      },
-    ]
+      })
+    })
 
     await replyToLINE(event.replyToken, replyMessages)
     return
@@ -658,4 +665,17 @@ const replyToLINE = async (
     console.error(e)
   }
   return
+}
+
+// NOTE: LINEのAPIの仕様でカルーセルの最大サイズが決められているのでおさまるように整形する
+const toGroupingCarouselContainerContents = (contents: CarouselContainerContent[]) => {
+  const groupingContents: CarouselContainerContent[][] = []
+
+  const slicedContents = contents.slice(0, CAROUSEL_CONTENT_MAX_SIZE * 4)
+  for (let i = 0; i < slicedContents.length; i += CAROUSEL_CONTENT_MAX_SIZE) {
+    const chunk = slicedContents.slice(i, i + CAROUSEL_CONTENT_MAX_SIZE)
+    groupingContents.push(chunk)
+  }
+
+  return groupingContents
 }
