@@ -3,6 +3,8 @@ import { useParams } from 'next/navigation'
 import React, { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import SubmitButton from '../../../components/SubmitButton'
+import { CLEANING_SCHEDULE } from '@/constants/CleaningSchedule'
+import { addHoursAndFormatDatetime } from '../../../components/addHoursAndFormatDatetime'
 
 export default function EditForm() {
   const { id } = useParams<{ id: string }>()
@@ -27,6 +29,21 @@ export default function EditForm() {
     amenities_info: null,
     bag_recieve_info: null,
     others: null,
+  })
+  const [cleaningSchedule, setCleaningSchedule] = useState<{
+    id: number
+    cleaner_id: number | null
+    guest_house_id: number | null
+    start_datetime: string
+    end_datetime: string
+    cleaning_status_id: number
+  }>({
+    id: 0,
+    cleaner_id: null,
+    guest_house_id: null,
+    start_datetime: '',
+    end_datetime: '',
+    cleaning_status_id: 1,
   })
   const [guestHouses, setGuestHouses] = useState<{ [key: number]: string }>({})
   const [selectedGuestHouseId, setSelectedGuestHouseId] = useState<number | null>(null)
@@ -53,8 +70,21 @@ export default function EditForm() {
           throw stayError
         }
 
+        // cleaningScheduleの取得
+        const { data: cleaningData, error: cleaningError } = await supabase
+          .from('cleaning_schedules')
+          .select(
+            `id, cleaner_id, guest_house_id, start_datetime, end_datetime, cleaning_status_id`,
+          )
+          .eq('stay_schedule_id', stayScheduleId)
+          .limit(1)
+          .single()
+
         setStaySchedule(stayData)
         setSelectedGuestHouseId(stayData.guest_house_id)
+        if (cleaningData) {
+          setCleaningSchedule(cleaningData)
+        }
 
         // 宿泊施設一覧の取得
         const { data: guestHousesData, error: guestHousesError } = await supabase
@@ -159,13 +189,39 @@ export default function EditForm() {
         others: staySchedule.others,
       }
 
-      const createStaySchedule = await supabase
+      // 更新する清掃員シフトスケジュールデータを準備
+      const cleaningStartDatetime = addHoursAndFormatDatetime(
+        staySchedule.end_datetime,
+        CLEANING_SCHEDULE.SETTING_TIME_FOR_CLEANING_START_DATETIME,
+      )
+      const cleaningEndDatetime = addHoursAndFormatDatetime(
+        cleaningStartDatetime,
+        CLEANING_SCHEDULE.CLEANING_TIME,
+      )
+      const cleaningScheduleData = {
+        cleaner_id: cleaningSchedule.cleaner_id, //初期設定はnullで設定し、LINEでシフト登録した時にcleaner_idを登録する
+        guest_house_id: selectedGuestHouseId!,
+        start_datetime: cleaningStartDatetime,
+        end_datetime: cleaningEndDatetime,
+        cleaning_status_id: cleaningSchedule.cleaning_status_id,
+      }
+
+      const updateStaySchedule = await supabase
         .from('stay_schedules')
         .update(stayScheduleData)
         .eq('id', stayScheduleId)
 
-      if (createStaySchedule.error) {
-        throw createStaySchedule.error
+      if (updateStaySchedule.error) {
+        throw updateStaySchedule.error
+      }
+
+      const updateCleaningSchedule = await supabase
+        .from('cleaning_schedules')
+        .update(cleaningScheduleData)
+        .eq('stay_schedule_id', stayScheduleId)
+
+      if (updateCleaningSchedule.error) {
+        throw updateCleaningSchedule.error
       }
 
       // すべての更新処理が成功した場合の処理
