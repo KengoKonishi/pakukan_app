@@ -1,9 +1,9 @@
 'use client'
 import { useParams } from 'next/navigation'
 import React, { useState, useEffect } from 'react'
+import { CLEANING_SCHEDULE } from '@/constants/CleaningSchedule'
 import { createClient } from '@/utils/supabase/client'
 import SubmitButton from '../../../components/SubmitButton'
-import { CLEANING_SCHEDULE } from '@/constants/CleaningSchedule'
 import { addHoursAndFormatDatetime } from '../../../components/addHoursAndFormatDatetime'
 
 export default function EditForm() {
@@ -71,7 +71,7 @@ export default function EditForm() {
         }
 
         // cleaningScheduleの取得
-        const { data: cleaningData, error: cleaningError } = await supabase
+        const { data: cleaningData } = await supabase
           .from('cleaning_schedules')
           .select(
             `id, cleaner_id, guest_house_id, start_datetime, end_datetime, cleaning_status_id`,

@@ -1,19 +1,8 @@
 import CleaningStatusTable from '@/app/cleaning_status/list/components/CleaningStatusTable'
 import SideMenu from '@/components/admin/SideMenu'
 import Title from '@/components/header/title'
-import { createClient } from '@/utils/supabase/server'
 
 export default function AdminSettingsPage() {
-  const canInitSupabaseClient = () => {
-    try {
-      createClient()
-      return true
-    } catch (e) {
-      return false
-    }
-  }
-  const isSupabaseConnected = canInitSupabaseClient()
-
   return (
     <div className='flex w-full h-full'>
       <div className='flex-shrink-0 w-80'>
