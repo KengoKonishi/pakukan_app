@@ -7,6 +7,7 @@ import { CheckBoxList } from '@/components/checkbox/CheckBoxList'
 import { useGuestHouseOptions } from '@/hooks/useGuestHouseOptions'
 import { CleaningScheduleModal } from './components/CleaningScheduleModal'
 import { CreateScheduleModal } from './components/CreateScheduleModal'
+import { ShiftShareButton } from './components/ShiftShareButton'
 import { StayScheduleModal } from './components/StayScheduleModal'
 import { useSchedules } from './hooks/useSchedules'
 
@@ -174,6 +175,9 @@ const AdminCalendar = () => {
             handleDateClick={handleDateClick}
             handleEventClick={handleEventClick}
           />
+          <div className='flex justify-end py-2'>
+            <ShiftShareButton />
+          </div>
         </div>
       </div>
     </div>
