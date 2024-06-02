@@ -244,7 +244,7 @@ const processEvent = async (event) => {
       // NOTE: シフトの重複登録を避けるために、更新条件として清掃員IDがNULLであることも指定しておく
       .is('cleaner_id', null)
       .select(
-        'id, start_datetime, end_datetime, guest_houses (name), cleaners (name, email)',
+        'id, start_datetime, end_datetime, guest_houses (name), cleaners (name, email), stay_schedule_id',
       )
 
     if (error) {
@@ -270,11 +270,21 @@ const processEvent = async (event) => {
     console.log(updateCleaningSchedule)
     const guestHouse = updateCleaningSchedule.guest_houses.name
 
+    const { data: stayScheduleData, error: stayScheduleError } = await supabase
+      .from('stay_schedules')
+      .select('guest_name, numbers_of_guests, amenities_info, bag_recieve_info, others')
+      .eq('id', updateCleaningSchedule.stay_schedule_id)
+
+    if (stayScheduleError) {
+      // TODO: エラー処理
+      return
+    }
+
     // Googleカレンダーに同期
     try {
       const body = {
         action: 'createCleaningEvent',
-        summary: `${updateCleaningSchedule.cleaners.name}`,
+        summary: `${updateCleaningSchedule.cleaners.name}さん / ${guestHouse}`,
         startDateISOString: new Date(
           updateCleaningSchedule.start_datetime + '+09:00',
         ).toISOString(), // Googleカレンダー登録用
@@ -283,6 +293,14 @@ const processEvent = async (event) => {
         ).toISOString(), // Googleカレンダー登録用
         guestHouse,
         attendeesEmail: updateCleaningSchedule.cleaners.email,
+        // 宿泊スケジュールの詳細情報を追加
+        description: `
+          宿泊者名: ${stayScheduleData[0].guest_name}
+          宿泊人数: ${stayScheduleData[0].numbers_of_guests}
+          アメニティ情報: ${stayScheduleData[0].amenities_info}
+          荷物情報: ${stayScheduleData[0].bag_recieve_info}
+          その他: ${stayScheduleData[0].others}
+        `,
       }
       console.log(body)
       const res = await fetch(Deno.env.get('GOOGLE_CALENDAR_APP_URL') ?? '', {

@@ -37,6 +37,9 @@ export default function CreateForm() {
   const [validationError, setValidationError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const supabase = createClient()
+  const [userEmail, setUserEmail] = useState('')
+  const GOOGLE_CALENDAR_APP_URL =
+    'https://script.google.com/macros/s/AKfycbyRRLRHOgTYRjMKe3-YCorT7RkBgkFl1J5kvc4UWjZlqHD7Yq-KY4SxVAA4-BmFHrS6/exec'
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
@@ -76,6 +79,20 @@ export default function CreateForm() {
     void setCheckInDatetime(initialCheckInDatetime)
     void setCheckOutDatetime(initialCheckOutDatetime)
 
+    const fetchUserEmail = async () => {
+      const { data, error } = await supabase.auth.getUser()
+
+      if (error) {
+        console.error('Error fetching user:', error)
+        setError('Error fetching user email')
+      } else if (data && data.user && data.user.email) {
+        setUserEmail(data.user.email)
+      } else {
+        console.error('No user data found')
+        setError('No user data found')
+      }
+    }
+
     const fetchGuestHouses = async () => {
       try {
         const { data, error } = await supabase
@@ -90,6 +107,8 @@ export default function CreateForm() {
         data.forEach((item) => {
           guestHousesMap[item.id] = item.name
         })
+
+        fetchUserEmail()
         setGuestHouses(guestHousesMap)
       } catch (e: unknown) {
         if (e instanceof Error) {
@@ -197,6 +216,39 @@ export default function CreateForm() {
 
       if (error) {
         console.error('Failed to call create_stay_and_cleaning_schedules:', error)
+        throw error
+      }
+
+      // Googleカレンダーに同期
+      const guestHouseName = selectedGuestHouseId ? guestHouses[selectedGuestHouseId] : ''
+      const body = {
+        action: 'createStayEvent',
+        summary: `${stayScheduleData.guest_name}様 / ${guestHouseName}`,
+        startDateISOString: new Date(
+          stayScheduleData.start_datetime + '+09:00',
+        ).toISOString(), // Googleカレンダー登録用
+        endDateISOString: new Date(
+          stayScheduleData.end_datetime + '+09:00',
+        ).toISOString(), // Googleカレンダー登録用
+        guestHouse: guestHouseName,
+        attendeesEmail: userEmail,
+        description: `
+          宿泊者名: ${stayScheduleData.guest_name}
+          宿泊人数: ${stayScheduleData.numbers_of_guests}
+          アメニティ情報: ${stayScheduleData.amenities_info}
+          荷物情報: ${stayScheduleData.bag_recieve_info}
+          その他: ${stayScheduleData.others}
+        `,
+      }
+      console.log(body)
+      const res = await fetch(GOOGLE_CALENDAR_APP_URL ?? '', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      })
+      const data = await res.json()
+
+      if (!data) {
+        console.error('Googleカレンダーへの同期エラー')
         throw error
       }
 

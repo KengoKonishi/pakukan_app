@@ -10,13 +10,17 @@ export default function CreateForm() {
   const [checkOutDatetime, setCheckOutDatetime] = useState('')
   const [guestHouses, setGuestHouses] = useState<{ [key: number]: string }>({})
   const [selectedGuestHouseId, setSelectedGuestHouseId] = useState<number | null>(null)
-  const [cleaners, setCleaners] = useState<{ [key: number]: string }>({})
+  const [cleaners, setCleaners] = useState<{
+    [key: number]: { name: string; email: string }
+  }>({})
   const [selectedCleanerId, setSelectedCleanerId] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [validationError, setValidationError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const supabase = createClient()
+  const GOOGLE_CALENDAR_APP_URL =
+    'https://script.google.com/macros/s/AKfycbyRRLRHOgTYRjMKe3-YCorT7RkBgkFl1J5kvc4UWjZlqHD7Yq-KY4SxVAA4-BmFHrS6/exec'
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
@@ -79,16 +83,16 @@ export default function CreateForm() {
         // 清掃員一覧の取得
         const { data: cleanersData, error: cleanersError } = await supabase
           .from('cleaners')
-          .select(`id, name`)
+          .select(`id, name, email`)
           .eq('is_deleted', 0)
 
         if (cleanersError) {
           throw cleanersError
         }
 
-        const cleanersMap: { [key: number]: string } = {}
+        const cleanersMap: { [key: number]: { name: string; email: string } } = {}
         cleanersData.forEach((item) => {
-          cleanersMap[item.id] = item.name
+          cleanersMap[item.id] = { name: item.name, email: item.email }
         })
         setCleaners(cleanersMap)
       } catch (e: unknown) {
@@ -144,6 +148,46 @@ export default function CreateForm() {
 
       if (createCleaningSchedule.error) {
         throw createCleaningSchedule.error
+      }
+
+      // 清掃員が指定された場合のみ、Googleカレンダーに同期
+      if (selectedCleanerId) {
+        const guestHouseName = selectedGuestHouseId
+          ? guestHouses[selectedGuestHouseId]
+          : ''
+        const cleanerName = `${cleaners[selectedCleanerId].name}さん / `
+        const cleanerEmail = cleaners[selectedCleanerId].email
+        const body = {
+          action: 'createCleaningEvent',
+          summary: `${cleanerName}${guestHouseName}`,
+          startDateISOString: new Date(
+            cleaningScheduleData.start_datetime + '+09:00',
+          ).toISOString(), // Googleカレンダー登録用
+          endDateISOString: new Date(
+            cleaningScheduleData.end_datetime + '+09:00',
+          ).toISOString(), // Googleカレンダー登録用
+          guestHouseName,
+          attendeesEmail: cleanerEmail,
+          // 宿泊スケジュールに紐づかないので追加しない
+          // description: `
+          //   宿泊者名: ${stayScheduleData[0].guest_name}
+          //   宿泊人数: ${stayScheduleData[0].numbers_of_guests}
+          //   アメニティ情報: ${stayScheduleData[0].amenities_info}
+          //   荷物情報: ${stayScheduleData[0].bag_recieve_info}
+          //   その他: ${stayScheduleData[0].others}
+          // `,
+        }
+        console.log(body)
+        const res = await fetch(GOOGLE_CALENDAR_APP_URL ?? '', {
+          method: 'POST',
+          body: JSON.stringify(body),
+        })
+        const data = await res.json()
+
+        if (!data) {
+          console.error('Googleカレンダーへの同期エラー')
+          throw error
+        }
       }
 
       // すべての更新処理が成功した場合の処理
@@ -239,9 +283,9 @@ export default function CreateForm() {
             className='px-3 py-3 border rounded-md ring-2 ring-amber-500 ring-offset-0 focus:ring-4 focus:outline-none'
           >
             <option value=''>選択してください</option>
-            {Object.entries(cleaners).map(([id, name]) => (
+            {Object.entries(cleaners).map(([id, cleaner]) => (
               <option key={id} value={id}>
-                {name}
+                {cleaner.name}
               </option>
             ))}
           </select>
