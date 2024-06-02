@@ -27,6 +27,7 @@ const AdminCalendar = () => {
     scheduleId: 0,
   })
   const [successMessage, setSuccessMessage] = useState('')
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [validationError, setValidationError] = useState('')
 
   useEffect(() => {

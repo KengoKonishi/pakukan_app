@@ -18,7 +18,6 @@ const GuestHouseTable = () => {
   const [itemsPerPage] = useState(10) // 1ページあたりのアイテム数
   const supabase = createClient()
   const [successMessage, setSuccessMessage] = useState('')
-  const [userId, setUserId] = useState('')
 
   useEffect(() => {
     const fetchCleaners = async () => {
@@ -40,7 +39,6 @@ const GuestHouseTable = () => {
           throw cleanersError
         }
         setCleaners(cleanersData)
-        setUserId(currentUser.id)
         setLoading(false)
       } catch (error) {
         console.error('Error fetching cleaners:', error)
@@ -50,7 +48,7 @@ const GuestHouseTable = () => {
     void fetchCleaners()
   }, [supabase])
 
-  const handleDelete = async (cleanerId: number, userId: string): Promise<void> => {
+  const handleDelete = async (cleanerId: number): Promise<void> => {
     setSuccessMessage('')
     try {
       const { error } = await supabase
@@ -154,9 +152,7 @@ const GuestHouseTable = () => {
                 <div className='flex justify-center'>
                   <EditButton label='編集' id={cleaner.id} />
                   <span className='mx-6'></span>
-                  <DeleteButton
-                    onConfirmDelete={() => handleDelete(cleaner.id, userId)}
-                  />
+                  <DeleteButton onConfirmDelete={() => handleDelete(cleaner.id)} />
                 </div>
               </td>
             </tr>

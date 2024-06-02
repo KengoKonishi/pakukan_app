@@ -182,6 +182,7 @@ export default function CreateForm() {
           method: 'POST',
           body: JSON.stringify(body),
         })
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const data = await res.json()
 
         if (!data) {
