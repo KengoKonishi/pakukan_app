@@ -5,22 +5,7 @@ import { CLEANING_STATUS_ID } from '@/constants/CleaningStatus'
 import { STAY_SCHEDULE } from '@/constants/StaySchedule'
 import { createClient } from '@/utils/supabase/client'
 import SubmitButton from '../../components/SubmitButton'
-
-// 基準となる時刻に引数で指定した時刻を足す+日時の整形
-const addHoursAndFormattDatetime = (
-  datetimeString: string,
-  hours: number | null = null,
-) => {
-  const datetime = new Date(datetimeString)
-  const timezoneOffset = datetime.getTimezoneOffset() // 現地時間からのオフセットを取得する
-  let millisecondsToAdd = 0
-  if (hours) {
-    millisecondsToAdd = hours * 60 * 60 * 1000 // 指定された時間をミリ秒に変換する
-  }
-  const adjustedTime = datetime.getTime() + millisecondsToAdd - timezoneOffset * 60 * 1000 // ローカル時間に変換する
-  const result = new Date(adjustedTime)
-  return result.toISOString().slice(0, 16) // 'yyyy-mm-ddTHH:MM'
-}
+import { addHoursAndFormatDatetime } from '../../components/addHoursAndFormatDatetime'
 
 export default function CreateForm() {
   const [checkInDatetime, setCheckInDatetime] = useState('')
@@ -54,7 +39,7 @@ export default function CreateForm() {
     let initialCheckInDatetime = ''
     if (initialCheckInDatetimeParam && initialCheckInDatetimeParam.includes(' ')) {
       // 「2024/5/7 6:00:00」のような「日付＋時刻」で渡される場合
-      initialCheckInDatetime = addHoursAndFormattDatetime(initialCheckInDatetimeParam)
+      initialCheckInDatetime = addHoursAndFormatDatetime(initialCheckInDatetimeParam)
     } else if (initialCheckInDatetimeParam) {
       // 「2024/5/7」のような「日付」で渡される場合、デフォルトの時刻を設定
       initialCheckInDatetime = addDefaultTimeToDatetime(
@@ -67,7 +52,7 @@ export default function CreateForm() {
     let initialCheckOutDatetime = ''
     if (initialCheckOutDatetimeParam && initialCheckOutDatetimeParam.includes(' ')) {
       // 「2024/5/7 6:00:00」のような「日付＋時刻」で渡される場合
-      initialCheckOutDatetime = addHoursAndFormattDatetime(initialCheckOutDatetimeParam)
+      initialCheckOutDatetime = addHoursAndFormatDatetime(initialCheckOutDatetimeParam)
     } else if (initialCheckOutDatetimeParam) {
       // 「2024/5/7」のような「日付」で渡される場合、デフォルトの時刻を設定
       initialCheckOutDatetime = addDefaultTimeToDatetime(
@@ -191,11 +176,11 @@ export default function CreateForm() {
       }
 
       // 更新する清掃員シフトスケジュールデータを準備
-      const cleaningStartDatetime = addHoursAndFormattDatetime(
+      const cleaningStartDatetime = addHoursAndFormatDatetime(
         checkOutDatetime,
         CLEANING_SCHEDULE.SETTING_TIME_FOR_CLEANING_START_DATETIME,
       )
-      const cleaningEndDatetime = addHoursAndFormattDatetime(
+      const cleaningEndDatetime = addHoursAndFormatDatetime(
         cleaningStartDatetime,
         CLEANING_SCHEDULE.CLEANING_TIME,
       )
