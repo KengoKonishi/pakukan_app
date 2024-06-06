@@ -153,7 +153,11 @@ export default function SettingForm() {
               開始日時
             </label>
             <div className='pl-4'>
-              {cleaningReport?.cleaning_schedules?.start_datetime ?? ''}
+              {cleaningReport?.cleaning_schedules?.start_datetime
+                ? new Date(
+                    cleaningReport.cleaning_schedules.start_datetime,
+                  ).toLocaleString()
+                : ''}
             </div>
           </div>
           <div className='p-2'> 〜 </div>
@@ -162,7 +166,11 @@ export default function SettingForm() {
               終了日時
             </label>
             <div className='pl-4'>
-              {cleaningReport?.cleaning_schedules?.end_datetime ?? ''}
+              {cleaningReport?.cleaning_schedules?.end_datetime
+                ? new Date(
+                    cleaningReport.cleaning_schedules.start_datetime,
+                  ).toLocaleString()
+                : ''}
             </div>
           </div>
         </div>
