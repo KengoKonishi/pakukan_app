@@ -130,6 +130,13 @@ export default function SettingForm() {
     }
   }
 
+  const pendingOrReturned = (cleaningStatusId: number) => {
+    return (
+      cleaningStatusId === CLEANING_STATUS_ID.RETURNED ||
+      cleaningStatusId === CLEANING_STATUS_ID.PENDING_REVIEW
+    )
+  }
+
   if (error) {
     return <div>Error: {error}</div>
   }
@@ -231,8 +238,7 @@ export default function SettingForm() {
             </Link>
           </div>
           {cleaningReport.cleaning_schedules &&
-            cleaningReport.cleaning_schedules.cleaning_status_id !==
-              CLEANING_STATUS_ID.COMPLETED && (
+            pendingOrReturned(cleaningReport.cleaning_schedules.cleaning_status_id) && (
               <div className='flex justify-center mr-10'>
                 <UpdateButton
                   confirmMessage={`差し戻しします。\n\nGoogleフォームで清掃員に修正してほしい箇所をコメントしていただけましたか。`}
@@ -242,28 +248,31 @@ export default function SettingForm() {
                 />
               </div>
             )}
-          {cleaningReport.cleaning_schedules?.cleaning_status_id !==
-            CLEANING_STATUS_ID.COMPLETED && (
-            <div className='flex justify-center'>
-              <UpdateButton
-                confirmMessage={`清掃を完了します。\n\nよろしいですか。`}
-                label='完了'
-                onClickUpdateButton={onClickUpdateButton}
-                upadteStatus={CLEANING_STATUS_ID.COMPLETED}
-              />
-            </div>
-          )}
-          {cleaningReport.cleaning_schedules?.cleaning_status_id ===
-            CLEANING_STATUS_ID.COMPLETED && (
-            <div className='flex justify-center'>
-              <UpdateButton
-                confirmMessage={`更新します。\n\nよろしいですか。`}
-                label='更新'
-                onClickUpdateButton={onClickUpdateButton}
-                upadteStatus={CLEANING_STATUS_ID.COMPLETED}
-              />
-            </div>
-          )}
+          {cleaningReport.cleaning_schedules &&
+            pendingOrReturned(cleaningReport.cleaning_schedules.cleaning_status_id) && (
+              <div className='flex justify-center'>
+                <UpdateButton
+                  confirmMessage={`清掃を完了します。\n\nよろしいですか。`}
+                  label='完了'
+                  onClickUpdateButton={onClickUpdateButton}
+                  upadteStatus={CLEANING_STATUS_ID.COMPLETED}
+                />
+              </div>
+            )}
+          {cleaningReport.cleaning_schedules &&
+            !pendingOrReturned(cleaningReport.cleaning_schedules.cleaning_status_id) && (
+              <div className='flex justify-center'>
+                <UpdateButton
+                  confirmMessage={`更新します。\n\nよろしいですか。`}
+                  label='更新'
+                  onClickUpdateButton={onClickUpdateButton}
+                  upadteStatus={
+                    cleaningReport.cleaning_schedules
+                      .cleaning_status_id as (typeof CLEANING_STATUS_ID)[keyof typeof CLEANING_STATUS_ID]
+                  }
+                />
+              </div>
+            )}
         </div>
         {error && <div className='text-red-500'>{error}</div>}
       </div>
