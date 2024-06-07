@@ -32,6 +32,7 @@ export const useSchedules = () => {
         end: schedule.end_datetime,
         eventType: 'stay',
         scheduleId: schedule.id,
+        textColor: '#000000',
       } as CustomEventInput)
     })
 
@@ -55,6 +56,8 @@ export const useSchedules = () => {
         end: schedule.end_datetime,
         eventType: 'cleaning',
         scheduleId: schedule.id,
+        color: '	#FCF2D0',
+        textColor: '#000000',
       } as CustomEventInput)
     })
 
