@@ -40,3 +40,7 @@
     transform: translateY(0);
   }
 }
+
+.fc-col-header {
+  @apply bg-amber-500;
+}
