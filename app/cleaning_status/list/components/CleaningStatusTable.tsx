@@ -199,7 +199,7 @@ const CleaningStatusTable = () => {
         bgColor = 'bg-yellow-400'
         break
       case CLEANING_STATUS_ID.COMPLETED:
-        bgColor = 'bg-blue-700'
+        bgColor = 'bg-blue-500'
         break
     }
 
