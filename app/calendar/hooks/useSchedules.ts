@@ -39,7 +39,7 @@ export const useSchedules = () => {
     // 清掃員スケジュール
     const { data: cleaningScheduleData, error: cleaningScheduleError } = await supabase
       .from('cleaning_schedules')
-      .select('id, start_datetime, end_datetime, cleaners (name)')
+      .select('id, start_datetime, end_datetime, cleaners (name), guest_houses (name)')
       .in('guest_house_id', targetGuestHouseIds)
 
     if (cleaningScheduleError) {
@@ -48,10 +48,12 @@ export const useSchedules = () => {
     }
 
     cleaningScheduleData.forEach((schedule) => {
+      let title = schedule.guest_houses?.name ? schedule.guest_houses?.name : ''
+      title += schedule.cleaners ? ` ${schedule.cleaners.name}` : ''
       schedules.push({
         // NOTE: 宿泊と清掃でidが重複した場合に正しく動作しないため、接頭辞をつける
         id: 'cleaning' + schedule.id.toString(),
-        title: schedule.cleaners ? `${schedule.cleaners.name}さん` : '',
+        title: title,
         start: schedule.start_datetime,
         end: schedule.end_datetime,
         eventType: 'cleaning',
