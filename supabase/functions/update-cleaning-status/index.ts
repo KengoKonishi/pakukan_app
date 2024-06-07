@@ -8,6 +8,8 @@ import { LINE_API } from '../_shared/line.ts'
 
 // 差し戻しを表すステータスID
 const CLEANING_STATUS_ID_RETURNED = 3
+// 完了を表すステータスID
+const CLEANING_STATUS_ID_COMPLETED = 4
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -41,7 +43,9 @@ Deno.serve(async (req) => {
 
     const { data: cleaningSchedule, error: getCleaningScheduleError } = await supabase
       .from('cleaning_schedules')
-      .select('id, cleaning_reports (id, edit_form_url), cleaners (line_user_id)')
+      .select(
+        'id, start_datetime, cleaning_status_id, cleaning_reports (id, edit_form_url), cleaners (line_user_id), guest_houses (name)',
+      )
       .limit(1)
       .single()
       .eq('id', cleaningScheduleId)
@@ -103,6 +107,36 @@ Deno.serve(async (req) => {
         {
           type: 'text',
           text: `清掃報告に差し戻しがあります。以下のリンクから確認してください。\n${cleaningSchedule.cleaning_reports.edit_form_url}`,
+        },
+      ]
+
+      const dataString = JSON.stringify({
+        to: cleaningSchedule.cleaners.line_user_id,
+        messages: replyMessages,
+      })
+
+      await fetch(LINE_API.PUSH_MESSAGE_URL, {
+        method: 'POST',
+        headers: headers,
+        body: dataString,
+      })
+    }
+
+    // 他のステータスから完了に更新された場合もLINE通知する
+    if (
+      cleaningSchedule.cleaning_status_id !== CLEANING_STATUS_ID_COMPLETED &&
+      updateStatus === CLEANING_STATUS_ID_COMPLETED
+    ) {
+      // LINE MESSAGING API 用の共通ヘッダー
+      const headers = {
+        Authorization: `Bearer ${Deno.env.get('LINE_CHANNEL_ACCESS_TOKEN') ?? ''}`,
+        'Content-Type': 'application/json',
+      }
+
+      const replyMessages = [
+        {
+          type: 'text',
+          text: `清掃報告のステータスが完了になりました。\n宿泊施設: ${cleaningSchedule.guest_houses.name}\n開始日: ${new Date(cleaningSchedule.start_datetime).toLocaleString()}`,
         },
       ]
 
