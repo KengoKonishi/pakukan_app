@@ -227,7 +227,7 @@ const processEvent = async (event) => {
   ) {
     const cleaner = await getCleaner(supabase, lineUserId)
     if (!cleaner) {
-      // TODO: エラー処理
+      await sendMessageNotExistsCleaner(event.replyToken)
       return
     }
 
@@ -339,7 +339,7 @@ const processEvent = async (event) => {
   ) {
     const cleaner = await getCleaner(supabase, lineUserId)
     if (!cleaner) {
-      // TODO: エラー処理
+      await sendMessageNotExistsCleaner(event.replyToken)
       return
     }
 
@@ -448,7 +448,7 @@ const processEvent = async (event) => {
   if (event.type === 'postback' && event.postback.data === 'action=GetCreaningReports') {
     const cleaner = await getCleaner(supabase, lineUserId)
     if (!cleaner) {
-      // TODO: エラー処理
+      await sendMessageNotExistsCleaner(event.replyToken)
       return
     }
 
@@ -576,7 +576,7 @@ const processEvent = async (event) => {
   ) {
     const cleaner = await getCleaner(supabase, lineUserId)
     if (!cleaner) {
-      // TODO: エラー処理
+      await sendMessageNotExistsCleaner(event.replyToken)
       return
     }
 
@@ -696,6 +696,16 @@ const replyToLINE = async (
     console.error(e)
   }
   return
+}
+
+const sendMessageNotExistsCleaner = async (lineReplyToken: string) => {
+  const replyMessages: TextMessage[] = [
+    {
+      type: 'text',
+      text: `ユーザー情報が見つかりませんでした。\n\n登録を行なっていない場合はGoogleフォームから登録を行なってください。`,
+    },
+  ]
+  await replyToLINE(lineReplyToken, replyMessages)
 }
 
 // NOTE: LINEのAPIの仕様でカルーセルの最大サイズが決められているのでおさまるように整形する
