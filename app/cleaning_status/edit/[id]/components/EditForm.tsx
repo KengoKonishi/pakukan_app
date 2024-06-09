@@ -114,10 +114,6 @@ export default function SettingForm() {
         },
       )
 
-      if (updateStatus === CLEANING_STATUS_ID.COMPLETED) {
-        window.location.reload()
-      }
-
       setTimeout(() => {
         setSuccessMessage('更新が成功しました')
       }, 1000)
