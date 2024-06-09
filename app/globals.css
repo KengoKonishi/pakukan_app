@@ -44,3 +44,7 @@
 .fc-col-header {
   @apply bg-amber-500;
 }
+
+.fc-dayGridMonth-view {
+  @apply bg-white;
+}

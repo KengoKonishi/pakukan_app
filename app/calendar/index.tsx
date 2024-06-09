@@ -169,7 +169,7 @@ const AdminCalendar = () => {
             onChange={onChangeGuestHouseCheckBox}
           />
         </div>
-        <div className='w-4/6 overflow-y-auto bg-white'>
+        <div className='w-4/6 overflow-y-auto'>
           <Calendar
             events={schedules}
             selectable={true}
