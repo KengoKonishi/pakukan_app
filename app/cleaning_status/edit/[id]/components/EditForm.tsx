@@ -197,24 +197,29 @@ export default function SettingForm() {
             {cleaningReport?.cleaning_schedules?.cleaners?.name ?? ''}
           </div>
         </div>
-        <div className='flex flex-col mb-6'>
-          <label htmlFor='guestHouseName' className='mb-4 pl-4 text-gray-700'>
-            回答用URL
-          </label>
-          <div className='pl-4'>
-            <div className='text-sm text-red-600 mb-2'>
-              ※画像は下記のURLからでは確認できないため、Gmailに届いたメールのリンクからご確認ください。
+        {cleaningReport?.edit_form_url && (
+          <div className='flex flex-col mb-6'>
+            <label htmlFor='guestHouseName' className='mb-4 pl-4 text-gray-700'>
+              Googleフォームリンク
+            </label>
+            <div className='pl-4'>
+              <a href={cleaningReport.edit_form_url} target='_blank'>
+                {cleaningReport.edit_form_url}
+              </a>
+              <div className='text-sm text-red-600 mt-2'>
+                ※画像は上記のURLからでは確認できないため、Gmailに届いたメールのリンクからご確認ください。
+              </div>
             </div>
-            <a href={cleaningReport?.edit_form_url ?? ''} target='_blank'>
-              {cleaningReport?.edit_form_url ?? ''}
-            </a>
           </div>
-        </div>
+        )}
         <div className='flex flex-col mb-6'>
           <label htmlFor='name' className='mb-4 pl-4 text-gray-700'>
-            Googleフォームリンク (任意 ※Gmailに届いたメールのリンクを登録ください。
-            差し戻し時に、リンクを探す手間を省くことができます)
+            リンク貼り付け欄
           </label>
+          <span className='mb-4 pl-4 text-gray-600'>
+            (任意 ※Gmailに届いたメールのリンクを登録ください。
+            差し戻し時に、リンクを探す手間を省くことができます)
+          </span>
           <input
             type='response_url'
             id='response_url'
