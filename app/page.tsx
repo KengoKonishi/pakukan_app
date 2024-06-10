@@ -11,7 +11,7 @@ export default function Index() {
 
       <div className='flex flex-col flex-1'>
         <div className='flex-1 bg-amber-50 w-full h-full'>
-          <Title title='カレンダーダッシュボード画面' />
+          <Title title='カレンダーダッシュボード' />
           <div className='pt-7'>
             <AdminCalendar />
           </div>

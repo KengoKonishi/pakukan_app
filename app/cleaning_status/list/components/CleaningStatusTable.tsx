@@ -185,6 +185,27 @@ const CleaningStatusTable = () => {
     setCurrentPage(pageNumber)
   }
 
+  const cleaningStatusBgColor = (cleaningStatusId: number) => {
+    let bgColor = ''
+
+    switch (cleaningStatusId) {
+      case CLEANING_STATUS_ID.UNFINISHED:
+        bgColor = 'bg-red-400'
+        break
+      case CLEANING_STATUS_ID.PENDING_REVIEW:
+        bgColor = 'bg-green-600'
+        break
+      case CLEANING_STATUS_ID.RETURNED:
+        bgColor = 'bg-yellow-400'
+        break
+      case CLEANING_STATUS_ID.COMPLETED:
+        bgColor = 'bg-blue-500'
+        break
+    }
+
+    return bgColor
+  }
+
   if (loading) {
     return <div>Loading...</div>
   }
@@ -293,7 +314,11 @@ const CleaningStatusTable = () => {
               </td>
               <td className='px-6 py-2 border-b border-r w-2/12 overflow-hidden text-ellipsis whitespace-nowrap'>
                 <div className='flex justify-center'>
-                  {cleaningReport.cleaning_schedules?.cleaning_status?.name}
+                  <div
+                    className={`mr-2 px-4 py-2 ${cleaningReport.cleaning_schedules?.cleaning_status_id ? cleaningStatusBgColor(cleaningReport.cleaning_schedules.cleaning_status_id) : ''} text-white text-center rounded-full w-40`}
+                  >
+                    {cleaningReport.cleaning_schedules?.cleaning_status?.name}
+                  </div>
                 </div>
               </td>
               <td className='px-6 py-2 border-b border-r w-1/12 overflow-hidden text-ellipsis whitespace-nowrap'>

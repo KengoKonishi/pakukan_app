@@ -1,6 +1,8 @@
 console.log('Functions start')
 import { createClient } from 'https://esm.sh/@supabase/supabase-js'
-import { LINE_API } from '../_shared/line.ts'
+import { LINE_API, TextMessage } from '../_shared/line.ts'
+import { getISODateInJST } from '../_shared/date.ts'
+import { CLEANING_STATUS_ID } from '../_shared/CleaningStatus.ts'
 
 // NOTE: 清掃報告の登録・更新を行う関数
 // NOTE: GoogleForm送信時にGoogleAppsScriptからデータが送信される
@@ -48,7 +50,7 @@ Deno.serve(async (req) => {
 
     const { data: cleaningSchedule, error: getCleaningScheduleError } = await supabase
       .from('cleaning_schedules')
-      .select('id, cleaning_reports (id)')
+      .select('id, cleaning_reports (id), cleaning_status_id')
       .limit(1)
       .single()
       .eq('cleaner_id', cleaner.id)
@@ -69,6 +71,21 @@ Deno.serve(async (req) => {
 
     console.log(cleaningSchedule)
 
+    // すでに完了済みの場合
+    if (cleaningSchedule.cleaning_status_id === CLEANING_STATUS_ID.COMPLETED) {
+      const messages: TextMessage[] = [
+        {
+          type: 'text',
+          text: `こちらの清掃報告は完了済みです。\n連絡事項などある場合は、直接連絡してください。`,
+        },
+      ]
+      await pushToLINE(cleaner.line_user_id, messages)
+
+      return new Response(JSON.stringify({ message: '清掃報告 正常終了' }), {
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
+
     // 清掃スケジュールのステータスを更新する
     const { error } = await supabase
       .from('cleaning_schedules')
@@ -76,7 +93,7 @@ Deno.serve(async (req) => {
         // ステータスを確認依頼中に設定
         cleaning_status_id: CLEANING_STATUS_ID_PENDING_REVIEW,
         // 更新日時を現在日時に設定
-        updated_at: new Date().toISOString(),
+        updated_at: getISODateInJST(),
       })
       .eq('id', cleaningScheduleId)
 
@@ -91,7 +108,7 @@ Deno.serve(async (req) => {
       const { error: insertError } = await supabase.from('cleaning_reports').insert({
         cleaning_schedule_id: cleaningScheduleId,
         edit_form_url: editFormUrl,
-        updated_at: new Date().toISOString(),
+        updated_at: getISODateInJST(),
       })
       if (insertError) {
         console.error(insertError)
@@ -103,7 +120,7 @@ Deno.serve(async (req) => {
         .from('cleaning_reports')
         .update({
           edit_form_url: editFormUrl,
-          updated_at: new Date().toISOString(),
+          updated_at: getISODateInJST(),
         })
         .eq('cleaning_schedule_id', cleaningScheduleId)
 
@@ -113,29 +130,14 @@ Deno.serve(async (req) => {
       }
     }
 
-    // LINE MESSAGING API 用の共通ヘッダー
-    const headers = {
-      Authorization: `Bearer ${Deno.env.get('LINE_CHANNEL_ACCESS_TOKEN') ?? ''}`,
-      'Content-Type': 'application/json',
-    }
-
-    const replyMessages = [
+    const messages: TextMessage[] = [
       {
         type: 'text',
         text: `清掃報告を受け付けました。`,
       },
     ]
 
-    const dataString = JSON.stringify({
-      to: cleaner.line_user_id,
-      messages: replyMessages,
-    })
-
-    await fetch(LINE_API.PUSH_MESSAGE_URL, {
-      method: 'POST',
-      headers: headers,
-      body: dataString,
-    })
+    await pushToLINE(cleaner.line_user_id, messages)
 
     return new Response(JSON.stringify({ message: '清掃報告 正常終了' }), {
       headers: { 'Content-Type': 'application/json' },
@@ -145,3 +147,32 @@ Deno.serve(async (req) => {
     return new Response(String(e?.message ?? e), { status: 500 })
   }
 })
+
+// NOTE: プッシュメッセージを使用してLINEに返信する。
+const pushToLINE = async (to: string, messages: TextMessage[]) => {
+  const headers = {
+    Authorization: `Bearer ${Deno.env.get('LINE_CHANNEL_ACCESS_TOKEN') ?? ''}`,
+    'Content-Type': 'application/json',
+  }
+
+  const dataString = JSON.stringify({
+    to,
+    messages,
+  })
+
+  try {
+    const res = await fetch(LINE_API.PUSH_MESSAGE_URL, {
+      method: 'POST',
+      headers: headers,
+      body: dataString,
+    })
+
+    const data = await res.json()
+    if (!res.ok) {
+      console.error(data)
+    }
+  } catch (e) {
+    console.error(e)
+  }
+  return
+}

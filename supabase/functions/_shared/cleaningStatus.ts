@@ -1,0 +1,6 @@
+export const CLEANING_STATUS_ID = {
+  UNFINISHED: 1,
+  PENDING_REVIEW: 2,
+  RETURNED: 3,
+  COMPLETED: 4,
+} as const

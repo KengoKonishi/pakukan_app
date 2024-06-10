@@ -8,6 +8,7 @@ import {
   TextMessage,
   CAROUSEL_CONTENT_MAX_SIZE,
 } from '../_shared/line.ts'
+import { CLEANING_STATUS_ID } from '../_shared/CleaningStatus.ts'
 
 const CLEANER_REGISTRATION_FORM_BASE_URL =
   'https://docs.google.com/forms/d/e/1FAIpQLSf0a2362CrlBG_V_ckjXFNE472LzvPoU8pcM77EeQpzW-5LXA/viewform?usp=pp_url&entry.503257359='
@@ -226,7 +227,7 @@ const processEvent = async (event) => {
   ) {
     const cleaner = await getCleaner(supabase, lineUserId)
     if (!cleaner) {
-      // TODO: エラー処理
+      await sendMessageNotExistsCleaner(event.replyToken)
       return
     }
 
@@ -338,7 +339,7 @@ const processEvent = async (event) => {
   ) {
     const cleaner = await getCleaner(supabase, lineUserId)
     if (!cleaner) {
-      // TODO: エラー処理
+      await sendMessageNotExistsCleaner(event.replyToken)
       return
     }
 
@@ -447,7 +448,7 @@ const processEvent = async (event) => {
   if (event.type === 'postback' && event.postback.data === 'action=GetCreaningReports') {
     const cleaner = await getCleaner(supabase, lineUserId)
     if (!cleaner) {
-      // TODO: エラー処理
+      await sendMessageNotExistsCleaner(event.replyToken)
       return
     }
 
@@ -575,7 +576,7 @@ const processEvent = async (event) => {
   ) {
     const cleaner = await getCleaner(supabase, lineUserId)
     if (!cleaner) {
-      // TODO: エラー処理
+      await sendMessageNotExistsCleaner(event.replyToken)
       return
     }
 
@@ -584,7 +585,7 @@ const processEvent = async (event) => {
 
     const { data: cleaningSchedule, error: getCleaningScheduleError } = await supabase
       .from('cleaning_schedules')
-      .select('id, start_datetime, end_datetime, guest_houses (name)')
+      .select('id, start_datetime, end_datetime, guest_houses (name), cleaning_status_id')
       .limit(1)
       .single()
       .eq('id', cleaningScheduleId)
@@ -593,6 +594,18 @@ const processEvent = async (event) => {
     if (getCleaningScheduleError) {
       console.error(getCleaningScheduleError)
       // TODO: エラー処理
+      return
+    }
+
+    // すでに完了済みだったらURLは送信しない
+    if (cleaningSchedule.cleaning_status_id === CLEANING_STATUS_ID.COMPLETED) {
+      const replyMessages: TextMessage[] = [
+        {
+          type: 'text',
+          text: `こちらの清掃報告は完了済みです。`,
+        },
+      ]
+      await replyToLINE(event.replyToken, replyMessages)
       return
     }
 
@@ -683,6 +696,16 @@ const replyToLINE = async (
     console.error(e)
   }
   return
+}
+
+const sendMessageNotExistsCleaner = async (lineReplyToken: string) => {
+  const replyMessages: TextMessage[] = [
+    {
+      type: 'text',
+      text: `ユーザー情報が見つかりませんでした。\n\n登録を行なっていない場合はGoogleフォームから登録を行なってください。`,
+    },
+  ]
+  await replyToLINE(lineReplyToken, replyMessages)
 }
 
 // NOTE: LINEのAPIの仕様でカルーセルの最大サイズが決められているのでおさまるように整形する

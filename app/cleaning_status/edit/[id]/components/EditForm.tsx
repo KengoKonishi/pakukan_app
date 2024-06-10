@@ -114,10 +114,6 @@ export default function SettingForm() {
         },
       )
 
-      if (updateStatus === CLEANING_STATUS_ID.COMPLETED) {
-        window.location.reload()
-      }
-
       setTimeout(() => {
         setSuccessMessage('更新が成功しました')
       }, 1000)
@@ -128,6 +124,13 @@ export default function SettingForm() {
         setError(e.message)
       }
     }
+  }
+
+  const pendingOrReturned = (cleaningStatusId: number) => {
+    return (
+      cleaningStatusId === CLEANING_STATUS_ID.RETURNED ||
+      cleaningStatusId === CLEANING_STATUS_ID.PENDING_REVIEW
+    )
   }
 
   if (error) {
@@ -153,7 +156,11 @@ export default function SettingForm() {
               開始日時
             </label>
             <div className='pl-4'>
-              {cleaningReport?.cleaning_schedules?.start_datetime ?? ''}
+              {cleaningReport?.cleaning_schedules?.start_datetime
+                ? new Date(
+                    cleaningReport.cleaning_schedules.start_datetime,
+                  ).toLocaleString()
+                : ''}
             </div>
           </div>
           <div className='p-2'> 〜 </div>
@@ -162,7 +169,11 @@ export default function SettingForm() {
               終了日時
             </label>
             <div className='pl-4'>
-              {cleaningReport?.cleaning_schedules?.end_datetime ?? ''}
+              {cleaningReport?.cleaning_schedules?.end_datetime
+                ? new Date(
+                    cleaningReport.cleaning_schedules.start_datetime,
+                  ).toLocaleString()
+                : ''}
             </div>
           </div>
         </div>
@@ -182,24 +193,29 @@ export default function SettingForm() {
             {cleaningReport?.cleaning_schedules?.cleaners?.name ?? ''}
           </div>
         </div>
-        <div className='flex flex-col mb-6'>
-          <label htmlFor='guestHouseName' className='mb-4 pl-4 text-gray-700'>
-            回答用URL
-          </label>
-          <div className='pl-4'>
-            <div className='text-sm text-red-600 mb-2'>
-              ※画像は下記のURLからでは確認できないため、Gmailに届いたメールのリンクからご確認ください。
+        {cleaningReport?.edit_form_url && (
+          <div className='flex flex-col mb-6'>
+            <label htmlFor='guestHouseName' className='mb-4 pl-4 text-gray-700'>
+              Googleフォームリンク
+            </label>
+            <div className='pl-4'>
+              <a href={cleaningReport.edit_form_url} target='_blank'>
+                {cleaningReport.edit_form_url}
+              </a>
+              <div className='text-sm text-red-600 mt-2'>
+                ※画像は上記のURLからでは確認できないため、Gmailに届いたメールのリンクからご確認ください。
+              </div>
             </div>
-            <a href={cleaningReport?.edit_form_url ?? ''} target='_blank'>
-              {cleaningReport?.edit_form_url ?? ''}
-            </a>
           </div>
-        </div>
+        )}
         <div className='flex flex-col mb-6'>
           <label htmlFor='name' className='mb-4 pl-4 text-gray-700'>
-            Googleフォームリンク (任意 ※Gmailに届いたメールのリンクを登録ください。
-            差し戻し時に、リンクを探す手間を省くことができます)
+            リンク貼り付け欄
           </label>
+          <span className='mb-4 pl-4 text-gray-600'>
+            (任意 ※Gmailに届いたメールのリンクを登録ください。
+            差し戻し時に、リンクを探す手間を省くことができます)
+          </span>
           <input
             type='response_url'
             id='response_url'
@@ -223,8 +239,7 @@ export default function SettingForm() {
             </Link>
           </div>
           {cleaningReport.cleaning_schedules &&
-            cleaningReport.cleaning_schedules.cleaning_status_id !==
-              CLEANING_STATUS_ID.COMPLETED && (
+            pendingOrReturned(cleaningReport.cleaning_schedules.cleaning_status_id) && (
               <div className='flex justify-center mr-10'>
                 <UpdateButton
                   confirmMessage={`差し戻しします。\n\nGoogleフォームで清掃員に修正してほしい箇所をコメントしていただけましたか。`}
@@ -234,28 +249,31 @@ export default function SettingForm() {
                 />
               </div>
             )}
-          {cleaningReport.cleaning_schedules?.cleaning_status_id !==
-            CLEANING_STATUS_ID.COMPLETED && (
-            <div className='flex justify-center'>
-              <UpdateButton
-                confirmMessage={`清掃を完了します。\n\nよろしいですか。`}
-                label='完了'
-                onClickUpdateButton={onClickUpdateButton}
-                upadteStatus={CLEANING_STATUS_ID.COMPLETED}
-              />
-            </div>
-          )}
-          {cleaningReport.cleaning_schedules?.cleaning_status_id ===
-            CLEANING_STATUS_ID.COMPLETED && (
-            <div className='flex justify-center'>
-              <UpdateButton
-                confirmMessage={`更新します。\n\nよろしいですか。`}
-                label='更新'
-                onClickUpdateButton={onClickUpdateButton}
-                upadteStatus={CLEANING_STATUS_ID.COMPLETED}
-              />
-            </div>
-          )}
+          {cleaningReport.cleaning_schedules &&
+            pendingOrReturned(cleaningReport.cleaning_schedules.cleaning_status_id) && (
+              <div className='flex justify-center'>
+                <UpdateButton
+                  confirmMessage={`清掃を完了します。\n\nよろしいですか。`}
+                  label='完了'
+                  onClickUpdateButton={onClickUpdateButton}
+                  upadteStatus={CLEANING_STATUS_ID.COMPLETED}
+                />
+              </div>
+            )}
+          {cleaningReport.cleaning_schedules &&
+            !pendingOrReturned(cleaningReport.cleaning_schedules.cleaning_status_id) && (
+              <div className='flex justify-center'>
+                <UpdateButton
+                  confirmMessage={`更新します。\n\nよろしいですか。`}
+                  label='更新'
+                  onClickUpdateButton={onClickUpdateButton}
+                  upadteStatus={
+                    cleaningReport.cleaning_schedules
+                      .cleaning_status_id as (typeof CLEANING_STATUS_ID)[keyof typeof CLEANING_STATUS_ID]
+                  }
+                />
+              </div>
+            )}
         </div>
         {error && <div className='text-red-500'>{error}</div>}
       </div>
