@@ -12,9 +12,9 @@ const SideMenu = () => {
   }
 
   return (
-    <div className='bg-gray-200 h-screen w-72 fixed left-0 top-0 px-4 text-sm'>
-      <div className='bg-orange-500 px-4 py-4 my-4 text-xl'>パクカンシステム</div>
-      <div className='h-screen bg-yellow-800 px-4 py-4'>
+    <div className='flex flex-col bg-gray-200  px-4 py-4 text-sm min-h-screen'>
+      <div className='bg-orange-500 px-4 py-4 mb-4 text-xl'>パクカンシステム</div>
+      <div className='h-full bg-yellow-800 w-[240px] px-4 py-4'>
         <div className='border-b-4 border-b-orange-500' onClick={handleToggle}>
           <p className='px-4 pb-2 text-white text-xl'>MENU</p>
         </div>

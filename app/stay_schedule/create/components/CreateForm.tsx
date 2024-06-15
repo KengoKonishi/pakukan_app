@@ -384,7 +384,7 @@ export default function CreateForm() {
             className='px-3 py-3 border rounded-md ring-2 ring-amber-500 ring-offset-0 focus:ring-4 focus:outline-none'
           />
         </div>
-        <div className='flex justify-center'>
+        <div className='flex justify-center pb-4'>
           <div className='flex justify-center'>
             <SubmitButton label='登録する' />
           </div>

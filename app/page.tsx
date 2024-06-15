@@ -5,16 +5,12 @@ import Title from '@/components/header/title'
 export default function Index() {
   return (
     <div className='flex flex-row w-full h-full'>
-      <div className='flex-shrink-0 w-80'>
-        <SideMenu />
-      </div>
+      <SideMenu />
 
       <div className='flex flex-col flex-1'>
         <div className='flex-1 bg-amber-50 w-full h-full'>
           <Title title='カレンダーダッシュボード' />
-          <div className='pt-7'>
-            <AdminCalendar />
-          </div>
+          <AdminCalendar />
         </div>
       </div>
     </div>
