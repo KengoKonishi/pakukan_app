@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import { CheckBoxList } from '@/components/checkbox/CheckBoxList'
-import { CLEANING_STATUS_ID } from '@/constants/CleaningStatus'
+import { CLEANING_STATUS_ID, cleaningStatusBgColor } from '@/constants/CleaningStatus'
 import { useCleaningStatusOptions } from '@/hooks/useCleaningStatusOptions'
 import { useGuestHouseOptions } from '@/hooks/useGuestHouseOptions'
 import { createClient } from '@/utils/supabase/client'
@@ -183,27 +183,6 @@ const CleaningStatusTable = () => {
 
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber)
-  }
-
-  const cleaningStatusBgColor = (cleaningStatusId: number) => {
-    let bgColor = ''
-
-    switch (cleaningStatusId) {
-      case CLEANING_STATUS_ID.UNFINISHED:
-        bgColor = 'bg-red-400'
-        break
-      case CLEANING_STATUS_ID.PENDING_REVIEW:
-        bgColor = 'bg-green-600'
-        break
-      case CLEANING_STATUS_ID.RETURNED:
-        bgColor = 'bg-yellow-400'
-        break
-      case CLEANING_STATUS_ID.COMPLETED:
-        bgColor = 'bg-blue-500'
-        break
-    }
-
-    return bgColor
   }
 
   if (loading) {
