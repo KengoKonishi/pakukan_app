@@ -159,7 +159,7 @@ const AdminCalendar = () => {
             handleDeleteCleaningSchedule={handleDeleteCleaningSchedule}
           />
         )}
-      <div className='flex flex-row justify-around max-h-full w-full'>
+      <div className='flex flex-row justify-start max-h-full w-full'>
         <div className='flex justify-start w-[240px] mx-4'>
           <CheckBoxList
             label='民泊施設一覧'
