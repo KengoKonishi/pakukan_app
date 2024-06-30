@@ -71,8 +71,8 @@ const CleaningStatusTable = () => {
 
       let topicMessage = ''
       data.forEach((schedule) => {
-        const date = new Date(schedule.start_datetime)
-        topicMessage += `・${date.getFullYear() + '/' + date.getMonth() + '/' + date.getDay()}の${schedule.guest_houses?.name}で清掃完了報告がありました。\n`
+        const startDatetimeStr = new Date(schedule.start_datetime).toLocaleString()
+        topicMessage += `・${startDatetimeStr} ${schedule.guest_houses?.name} のシフトで清掃完了報告がありました。\n`
       })
       console.log(data)
 
