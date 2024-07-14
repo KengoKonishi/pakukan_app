@@ -5,6 +5,8 @@ import { createClient } from '@/utils/supabase/client'
 import BackButton from '../../../components/BackButton'
 import SubmitButton from '../../../components/SubmitButton'
 
+const maxGuestNameLength = 40
+
 export default function SettingForm() {
   const [error, setError] = useState('')
   const [validationError, setValidationError] = useState('')
@@ -41,6 +43,13 @@ export default function SettingForm() {
     // メッセージをリセットする
     setValidationError('')
     setSuccessMessage('')
+
+    // 文字数のチェック
+    const guesthouseName = guesthouse?.name || ''
+    if (guesthouseName.length > maxGuestNameLength) {
+      setValidationError(`宿泊名は${maxGuestNameLength}文字以内で入力してください。`)
+      return
+    }
 
     // 宿泊施設名の正規表現
     const prohibitedNamePattern = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+/
@@ -113,6 +122,7 @@ export default function SettingForm() {
             }
             required
             className='px-3 py-3 border rounded-md ring-2 ring-amber-500 ring-offset-0 focus:ring-4 focus:outline-none'
+            maxLength={maxGuestNameLength}
           />
         </div>
         <div className='flex justify-center'>

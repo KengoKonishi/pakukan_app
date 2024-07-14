@@ -46,7 +46,7 @@ export const ShiftShareButton = () => {
   return (
     <>
       <button
-        className='py-2 px-4 rounded-full bg-amber-500 text-white no-underline'
+        className='mb-4 py-2 px-4 rounded-full bg-amber-500 text-white no-underline'
         type='button'
         onClick={onButtonClick}
       >

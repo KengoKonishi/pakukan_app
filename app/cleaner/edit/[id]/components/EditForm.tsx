@@ -5,6 +5,9 @@ import { createClient } from '@/utils/supabase/client'
 import BackButton from './BackButton'
 import SubmitButton from './SubmitButton'
 
+const maxCleanerNameLength = 20
+const maxMailLength = 40
+
 export default function SettingForm() {
   const [error, setError] = useState('')
   const [validationError, setValidationError] = useState('')
@@ -49,16 +52,31 @@ export default function SettingForm() {
     setValidationError('')
     setSuccessMessage('')
 
-    // 宿泊施設名のバリデーション
+    const cleanerName = cleaner?.name
+
+    // 名前のバリデーション
+    // 文字数のチェック
+    if (cleanerName.length > maxCleanerNameLength) {
+      setValidationError(`名前は${maxCleanerNameLength}文字以内で入力してください。`)
+      return
+    }
+    // 禁止文字チェック
     const prohibitedNamePattern = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+/
-    if (prohibitedNamePattern.test(cleaner?.name || '')) {
-      setValidationError('宿泊施設名に禁止文字が使用されています。')
+    if (prohibitedNamePattern.test(cleanerName)) {
+      setValidationError('名前に禁止文字が使用されています。')
       return
     }
 
     // メールアドレスのバリデーション
+    const cleanerMail = cleaner?.email
+    // 文字数のチェック
+    if (cleanerMail.length > maxMailLength) {
+      setValidationError(`名前は${maxMailLength}文字以内で入力してください。`)
+      return
+    }
+    // 禁止文字チェック
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailPattern.test(cleaner?.email || '')) {
+    if (!emailPattern.test(cleanerMail || '')) {
       setValidationError('メールアドレスの形式が間違っています。')
       return
     }
@@ -138,6 +156,7 @@ export default function SettingForm() {
             }
             required
             className='px-3 py-3 border rounded-md ring-2 ring-amber-500 ring-offset-0 focus:ring-4 focus:outline-none'
+            maxLength={maxCleanerNameLength}
           />
         </div>
         <div className='flex flex-col mb-6 max-w-md'>
@@ -156,6 +175,7 @@ export default function SettingForm() {
             }
             required
             className='px-3 py-3 border rounded-md ring-2 ring-amber-500 ring-offset-0 focus:ring-4 focus:outline-none'
+            maxLength={maxMailLength}
           />
         </div>
         <div className='flex flex-col mb-6 max-w-md'>

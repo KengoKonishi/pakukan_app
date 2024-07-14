@@ -159,8 +159,8 @@ const AdminCalendar = () => {
             handleDeleteCleaningSchedule={handleDeleteCleaningSchedule}
           />
         )}
-      <div className='flex flex-row justify-center w-full'>
-        <div className='w-1/6 mr-4'>
+      <div className='flex flex-row justify-start max-h-full w-full'>
+        <div className='flex justify-start w-1/6 min-w-[240px] mx-4'>
           <CheckBoxList
             label='民泊施設一覧'
             name='guestHouses'
@@ -169,7 +169,7 @@ const AdminCalendar = () => {
             onChange={onChangeGuestHouseCheckBox}
           />
         </div>
-        <div className='w-4/6 overflow-y-auto'>
+        <div className='max-h-full w-5/6 min-w-[800px] overflow-y-auto p-8'>
           <Calendar
             events={schedules}
             selectable={true}

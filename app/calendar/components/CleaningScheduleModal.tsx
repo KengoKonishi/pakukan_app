@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { cleaningStatusBgColor } from '@/constants/CleaningStatus'
 import { createClient } from '@/utils/supabase/client'
 import DeleteButton from './DeleteButton'
 
@@ -9,6 +10,7 @@ type CleaningSchedule = {
   id: number
   start_datetime: string
   end_datetime: string
+  cleaning_status_id: number
   cleaning_status: {
     name: string
   } | null
@@ -37,7 +39,7 @@ export const CleaningScheduleModal = ({
       const { data, error } = await supabase
         .from('cleaning_schedules')
         .select(
-          'id, start_datetime, end_datetime, cleaning_status (name), guest_houses (name), cleaners (name)',
+          'id, start_datetime, end_datetime, cleaning_status_id, cleaning_status (name), guest_houses (name), cleaners (name)',
         )
         .eq('id', id)
 
@@ -115,7 +117,13 @@ export const CleaningScheduleModal = ({
           <div className='w-4/5'>
             <div className='flex justify-start border-b-4 border-b-amber-500 mb-4'>
               <h3 className='text-2xl font-bold pt-5 pl-5 mb-2'>
-                清掃スケジュール<span> {cleaningSchedule?.cleaning_status?.name}</span>
+                清掃スケジュール
+                <span
+                  className={`ml-8 px-4 py-2 ${cleaningSchedule?.cleaning_status_id ? cleaningStatusBgColor(cleaningSchedule.cleaning_status_id) : ''} text-white text-center rounded-full w-40`}
+                >
+                  {' '}
+                  {cleaningSchedule?.cleaning_status?.name}
+                </span>
               </h3>
             </div>
             <div className='flex justify-end'>
