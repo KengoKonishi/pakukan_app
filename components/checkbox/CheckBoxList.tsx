@@ -36,7 +36,7 @@ export const CheckBoxList = ({
                     onChange={onChange}
                     value={option.id.toString()}
                   />
-                  <label>{option.name}</label>
+                  <label className='break-all'>{option.name}</label>
                 </div>
               )
             })}
@@ -61,7 +61,7 @@ export const CheckBoxList = ({
                   onChange={onChange}
                   value={option.id.toString()}
                 />
-                <label>{option.name}</label>
+                <label className='break-all'>{option.name}</label>
               </div>
             )
           })}
