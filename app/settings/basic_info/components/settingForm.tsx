@@ -43,19 +43,33 @@ export default function SettingForm() {
 
     // 氏名の正規表現
     const prohibitedNamePattern = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+/
+    const maxNameLength = 25
 
     // 氏名のバリデーション
     if (prohibitedNamePattern.test(name)) {
-      setValidationError('氏名に禁止文字が使用されています。')
+      setValidationError('名前に禁止文字が使用されています。')
+      return
+    }
+
+    // 氏名の文字数制限バリデーション
+    if (name.length > maxNameLength) {
+      setValidationError(`名前は${maxNameLength}文字以内で入力してください。`)
       return
     }
 
     // メールアドレスの正規表現
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const maxEmailLength = 40
 
     // メールアドレスのバリデーション
     if (!emailPattern.test(email)) {
       setValidationError('メールアドレスの形式が間違っています。')
+      return
+    }
+
+    // メールアドレスの文字数制限バリデーション
+    if (email.length > maxNameLength) {
+      setValidationError(`メールアドレスは${maxEmailLength}文字以内で入力してください。`)
       return
     }
 
@@ -81,9 +95,7 @@ export default function SettingForm() {
       // すべての更新処理が成功した場合の処理
       console.debug('フォームの更新処理が成功しました')
       setTimeout(() => {
-        setSuccessMessage(
-          '更新が成功しました　（送信されたメールからアドレス変更手続きをお願いします）',
-        )
+        setSuccessMessage('更新が成功しました')
       }, 1000)
     } catch (e: unknown) {
       // 更新処理が失敗した場合の処理
