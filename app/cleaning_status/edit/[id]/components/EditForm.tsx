@@ -65,7 +65,7 @@ export default function SettingForm() {
           .single()
 
         if (getCleaningReportsError) {
-          console.log(getCleaningReportsError)
+          console.error(getCleaningReportsError)
           return
         }
         if (!data || !data.cleaning_schedules) {

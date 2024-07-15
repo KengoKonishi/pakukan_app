@@ -177,7 +177,7 @@ export default function CreateForm() {
           //   その他: ${stayScheduleData[0].others}
           // `,
         }
-        console.log(body)
+        console.debug(body)
         const res = await fetch(GOOGLE_CALENDAR_APP_URL ?? '', {
           method: 'POST',
           body: JSON.stringify(body),
@@ -192,7 +192,7 @@ export default function CreateForm() {
       }
 
       // すべての更新処理が成功した場合の処理
-      console.log('フォームの更新処理が成功しました')
+      console.debug('フォームの更新処理が成功しました')
       setTimeout(() => {
         setSuccessMessage('作成が成功しました')
       }, 1000)

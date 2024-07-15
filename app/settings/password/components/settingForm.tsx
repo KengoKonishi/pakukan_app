@@ -19,7 +19,7 @@ export default function SettingForm() {
         const {
           data: { user },
         } = await supabase.auth.getUser()
-        console.log(user)
+        console.debug(user)
       } catch (e: unknown) {
         if (e instanceof Error) {
           setError(e.message)
@@ -73,7 +73,7 @@ export default function SettingForm() {
       }
 
       // すべての更新処理が成功した場合の処理
-      console.log('フォームの更新処理が成功しました')
+      console.debug('フォームの更新処理が成功しました')
 
       setTimeout(() => {
         setSuccessMessage('更新が成功しました')
@@ -87,7 +87,7 @@ export default function SettingForm() {
           )
         } else {
           // 更新処理が失敗した場合の処理
-          console.log('フォームの更新処理が失敗しました:')
+          console.debug('フォームの更新処理が失敗しました:')
           setError(e.message)
         }
       }

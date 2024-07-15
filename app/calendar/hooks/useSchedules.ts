@@ -19,7 +19,7 @@ export const useSchedules = () => {
       .in('guest_house_id', targetGuestHouseIds)
 
     if (stayScheduleError) {
-      console.log(stayScheduleError)
+      console.error(stayScheduleError)
       return
     }
 
@@ -43,7 +43,7 @@ export const useSchedules = () => {
       .in('guest_house_id', targetGuestHouseIds)
 
     if (cleaningScheduleError) {
-      console.log(cleaningScheduleError)
+      console.error(cleaningScheduleError)
       return
     }
 

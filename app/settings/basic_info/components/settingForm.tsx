@@ -18,7 +18,6 @@ export default function SettingForm() {
         const {
           data: { user },
         } = await supabase.auth.getUser()
-        console.log(user)
 
         setName((user?.user_metadata.name as string) || '')
         setEmail(user?.email || '')
@@ -69,7 +68,6 @@ export default function SettingForm() {
 
       // auth.users テーブルの更新
       const authUpdate = await supabase.auth.updateUser(authUserData)
-      console.log(authUpdate?.error?.status)
       if (authUpdate.error) {
         if (authUpdate.error.status == 429) {
           setValidationError(
@@ -81,7 +79,7 @@ export default function SettingForm() {
       }
 
       // すべての更新処理が成功した場合の処理
-      console.log('フォームの更新処理が成功しました')
+      console.debug('フォームの更新処理が成功しました')
       setTimeout(() => {
         setSuccessMessage(
           '更新が成功しました　（送信されたメールからアドレス変更手続きをお願いします）',

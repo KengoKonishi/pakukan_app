@@ -68,7 +68,7 @@ const GuestHouseTable = () => {
         throw fetchError
       }
 
-      console.log('フォームの削除処理が成功しました')
+      console.debug('フォームの削除処理が成功しました')
       await new Promise((resolve) => setTimeout(resolve, 1000))
       setSuccessMessage('削除しました')
       setCleaners(updatedCleaners)
