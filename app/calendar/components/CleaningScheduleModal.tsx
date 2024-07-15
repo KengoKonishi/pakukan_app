@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { cleaningStatusBgColor } from '@/constants/CleaningStatus'
 import { createClient } from '@/utils/supabase/client'
 import DeleteButton from './DeleteButton'
 
@@ -20,6 +19,17 @@ type CleaningSchedule = {
   cleaners: {
     name: string
   } | null
+}
+
+const cleaningStatusBgColor = (cleaningStatusId: number) => {
+  // NOTE: Switch文で定義すると動的に当てたクラスにスタイルが適用されなかったため配列に修正
+  const cleaningStatusBgColors = [
+    'bg-red-400',
+    'bg-green-600',
+    'bg-yellow-400',
+    'bg-blue-500',
+  ]
+  return cleaningStatusBgColors[cleaningStatusId - 1]
 }
 
 export const CleaningScheduleModal = ({
