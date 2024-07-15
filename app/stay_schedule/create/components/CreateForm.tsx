@@ -23,8 +23,6 @@ export default function CreateForm() {
   const [successMessage, setSuccessMessage] = useState('')
   const supabase = createClient()
   const [userEmail, setUserEmail] = useState('')
-  const GOOGLE_CALENDAR_APP_URL =
-    'https://script.google.com/macros/s/AKfycbyRRLRHOgTYRjMKe3-YCorT7RkBgkFl1J5kvc4UWjZlqHD7Yq-KY4SxVAA4-BmFHrS6/exec'
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
@@ -226,7 +224,7 @@ export default function CreateForm() {
         `,
       }
       console.debug(body)
-      const res = await fetch(GOOGLE_CALENDAR_APP_URL ?? '', {
+      const res = await fetch(process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_APP_URL ?? '', {
         method: 'POST',
         body: JSON.stringify(body),
       })
