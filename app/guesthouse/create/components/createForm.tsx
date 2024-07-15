@@ -59,7 +59,7 @@ export default function SettingForm() {
       }
 
       // すべての更新処理が成功した場合の処理
-      console.log('フォームの更新処理が成功しました')
+      console.debug('フォームの更新処理が成功しました')
       setTimeout(() => {
         setSuccessMessage('作成が成功しました')
       }, 1000)

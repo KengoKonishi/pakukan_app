@@ -23,8 +23,6 @@ export default function CreateForm() {
   const [successMessage, setSuccessMessage] = useState('')
   const supabase = createClient()
   const [userEmail, setUserEmail] = useState('')
-  const GOOGLE_CALENDAR_APP_URL =
-    'https://script.google.com/macros/s/AKfycbyRRLRHOgTYRjMKe3-YCorT7RkBgkFl1J5kvc4UWjZlqHD7Yq-KY4SxVAA4-BmFHrS6/exec'
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
@@ -225,8 +223,8 @@ export default function CreateForm() {
           その他: ${stayScheduleData.others}
         `,
       }
-      console.log(body)
-      const res = await fetch(GOOGLE_CALENDAR_APP_URL ?? '', {
+      console.debug(body)
+      const res = await fetch(process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_APP_URL ?? '', {
         method: 'POST',
         body: JSON.stringify(body),
       })
@@ -239,7 +237,7 @@ export default function CreateForm() {
       }
 
       // すべての更新処理が成功した場合の処理
-      console.log('フォームの更新処理が成功しました')
+      console.debug('フォームの更新処理が成功しました')
       setTimeout(() => {
         setSuccessMessage('作成が成功しました')
       }, 1000)

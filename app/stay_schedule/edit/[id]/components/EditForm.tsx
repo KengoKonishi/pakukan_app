@@ -225,7 +225,7 @@ export default function EditForm() {
       }
 
       // すべての更新処理が成功した場合の処理
-      console.log('フォームの更新処理が成功しました')
+      console.debug('フォームの更新処理が成功しました')
       setTimeout(() => {
         setSuccessMessage('更新が成功しました')
       }, 1000)

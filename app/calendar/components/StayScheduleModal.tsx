@@ -41,7 +41,7 @@ export const StayScheduleModal = ({
         .eq('id', id)
 
       if (error) {
-        console.log(error)
+        console.error(error)
         return
       }
 
@@ -94,7 +94,7 @@ export const StayScheduleModal = ({
       }
 
       // すべての更新処理が成功した場合の処理
-      console.log('フォームの削除処理が成功しました')
+      console.debug('フォームの削除処理が成功しました')
       await new Promise((resolve) => setTimeout(resolve, 1000))
 
       // 削除が成功したら親コンポーネントに通知

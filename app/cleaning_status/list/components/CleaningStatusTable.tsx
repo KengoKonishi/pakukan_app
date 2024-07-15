@@ -74,7 +74,7 @@ const CleaningStatusTable = () => {
         const startDatetimeStr = new Date(schedule.start_datetime).toLocaleString()
         topicMessage += `・${startDatetimeStr} ${schedule.guest_houses?.name} のシフトで清掃完了報告がありました。\n`
       })
-      console.log(data)
+      console.debug(data)
 
       setTopicMessage(topicMessage)
     }
@@ -140,7 +140,7 @@ const CleaningStatusTable = () => {
       .order('id')
 
     if (getCleaningReportsError) {
-      console.log(getCleaningReportsError)
+      console.error(getCleaningReportsError)
       return
     }
 

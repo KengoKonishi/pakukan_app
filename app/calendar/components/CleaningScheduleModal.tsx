@@ -44,7 +44,7 @@ export const CleaningScheduleModal = ({
         .eq('id', id)
 
       if (error) {
-        console.log(error)
+        console.error(error)
         return
       }
 
@@ -52,7 +52,7 @@ export const CleaningScheduleModal = ({
         setCleaningSchedule(data[0])
       } else {
         // データが見つからない場合の処理を追加するか、適切なエラーメッセージをログに出力します。
-        console.log('データが見つかりませんでした')
+        console.error('データが見つかりませんでした')
       }
     }
 
@@ -78,7 +78,7 @@ export const CleaningScheduleModal = ({
       }
 
       // すべての更新処理が成功した場合の処理
-      console.log('フォームの削除処理が成功しました')
+      console.debug('フォームの削除処理が成功しました')
       await new Promise((resolve) => setTimeout(resolve, 1000))
 
       // 削除が成功したら親コンポーネントに通知

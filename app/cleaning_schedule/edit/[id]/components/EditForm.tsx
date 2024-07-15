@@ -135,7 +135,7 @@ export default function EditForm() {
         end_datetime: cleaningSchedule.end_datetime,
         cleaning_status_id: cleaningSchedule.cleaning_status_id,
       }
-      console.log(cleaningScheduleData)
+      console.debug(cleaningScheduleData)
 
       const updateCleaningSchedule = await supabase
         .from('cleaning_schedules')
@@ -147,7 +147,7 @@ export default function EditForm() {
       }
 
       // すべての更新処理が成功した場合の処理
-      console.log('フォームの更新処理が成功しました')
+      console.debug('フォームの更新処理が成功しました')
       setTimeout(() => {
         setSuccessMessage('更新が成功しました')
       }, 1000)
